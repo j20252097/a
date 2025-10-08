@@ -1,222 +1,78 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>ミュージックプレイヤー 🎧</title>
 <style>
+  /* --- 基本スタイル（前回のやわらかデザインを継承） --- */
   body {
     font-family: "Hiragino Sans", "Noto Sans JP", sans-serif;
     margin: 0;
     padding: 0;
-    background: linear-gradient(135deg, #fcecff, #eafff8, #e0e8ff);
+    background: linear-gradient(135deg,#fcecff,#eafff8,#e0e8ff);
     min-height: 100vh;
-    /* ✅ スクロール禁止を解除 */
     overflow-x: hidden;
     overflow-y: auto;
   }
-
-  /* 背景アニメーション */
-  @keyframes float {
-    0% { transform: translateY(0) rotate(0deg); opacity: 0.7; }
-    50% { transform: translateY(-20px) rotate(10deg); opacity: 1; }
-    100% { transform: translateY(0) rotate(-10deg); opacity: 0.7; }
-  }
-
-  .bubble {
-    position: absolute;
-    background: rgba(255, 255, 255, 0.5);
-    border-radius: 50%;
-    animation: float 6s ease-in-out infinite;
-    z-index: 0;
-  }
-
-  canvas#wave {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    z-index: 0;
-    opacity: 0.5;
-    pointer-events: none;
-  }
-
-  h1 {
-    text-align: center;
-    font-size: 2em;
-    color: #6a5acd;
-    padding-top: 30px;
-    z-index: 2;
-    position: relative;
-  }
-
+  h1 { text-align:center; color:#6a5acd; padding-top:20px; }
   #player {
-    background: rgba(255,255,255,0.9);
-    border-radius: 16px;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-    max-width: 700px;
-    margin: 20px auto 60px auto;
-    padding: 20px;
-    text-align: center;
-    position: relative;
-    z-index: 2;
+    max-width:800px;
+    margin:18px auto 60px;
+    background: rgba(255,255,255,0.95);
+    border-radius:14px;
+    padding:16px;
+    box-shadow:0 6px 24px rgba(0,0,0,0.08);
+    position:relative;
+    z-index:2;
   }
-
-  video {
-    width: 100%;
-    border-radius: 12px;
-    background: #000;
+  video{ width:100%; border-radius:10px; background:#000; display:block; }
+  #info{ margin-top:10px; font-size:1.1rem; color:#444; text-align:center; }
+  #controls,#extraControls{ display:flex; gap:10px; justify-content:center; margin-top:10px; flex-wrap:wrap;}
+  button{
+    background:#a58ff7; color:#fff; border:none; border-radius:8px; padding:8px 14px; cursor:pointer;
   }
+  button.active{ background:#ff8cb0; }
+  .sliderContainer{ width:100%; max-width:420px; margin:6px auto; text-align:left; }
+  .sliderContainer label{ font-size:0.9rem; color:#444; display:block; margin-bottom:6px; }
+  input[type="range"]{ width:100%; accent-color:#a58ff7; }
 
-  #info {
-    font-size: 1.2em;
-    margin-top: 10px;
-    color: #444;
-  }
+  /* progress */
+  #progressContainer{ height:10px; background:#eee; border-radius:6px; margin-top:12px; cursor:pointer; position:relative; }
+  #progressBar{ height:100%; width:0%; border-radius:6px; background:linear-gradient(90deg,#a58ff7,#ff8cb0); transition:width .06s linear; }
 
-  /* 再生バー */
-  #progressContainer {
-    width: 100%;
-    height: 10px;
-    background: #ddd;
-    border-radius: 5px;
-    margin: 10px 0;
-    cursor: pointer;
-    position: relative;
-  }
+  #timeDisplay{ display:flex; justify-content:space-between; color:#666; font-size:0.9rem; margin-top:6px; }
 
-  #progressBar {
-    height: 100%;
-    width: 0%;
-    background: linear-gradient(90deg, #a58ff7, #ff8cb0);
-    border-radius: 5px;
-    transition: width 0.2s linear;
-  }
+  /* track list */
+  #trackArea{ margin-top:10px; display:flex; gap:16px; align-items:flex-start; flex-wrap:wrap; }
+  #trackList{ flex:1 1 320px; max-height:320px; overflow:auto; padding-right:6px; }
+  .track{ background:#fff; padding:10px; border-radius:10px; margin-bottom:8px; box-shadow:0 2px 6px rgba(0,0,0,0.06); display:flex; justify-content:space-between; align-items:center; cursor:pointer;}
+  .track.playing{ background:linear-gradient(90deg,#f0ebff,#fff); border-left:5px solid #a58ff7; }
+  .fav{ font-size:1.2rem; color:#ccc; cursor:pointer; }
+  .fav.active{ color:#ff6781; }
 
-  #timeDisplay {
-    display: flex;
-    justify-content: space-between;
-    font-size: 0.9em;
-    color: #666;
-    margin-top: 4px;
-  }
+  /* EQ panel */
+  #eqPanel{ flex:0 0 240px; background:rgba(255,255,255,0.9); border-radius:10px; padding:10px; box-shadow:0 2px 6px rgba(0,0,0,0.03); }
+  #waveCanvas{ position:fixed; top:0; left:0; width:100vw; height:100vh; z-index:0; opacity:0.45; pointer-events:none; }
 
-  #controls, #extraControls {
-    margin-top: 15px;
-    display: flex;
-    justify-content: center;
-    gap: 10px;
-    flex-wrap: wrap;
-  }
-
-  #settings {
-    margin-top: 15px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 8px;
-  }
-
-  .sliderContainer {
-    width: 90%;
-    max-width: 400px;
-    text-align: left;
-  }
-
-  .sliderContainer label {
-    font-size: 0.9em;
-    color: #555;
-  }
-
-  input[type="range"] {
-    width: 100%;
-    accent-color: #a58ff7;
-    cursor: pointer;
-  }
-
-  button {
-    background: #a58ff7;
-    color: white;
-    border: none;
-    border-radius: 8px;
-    padding: 10px 16px;
-    font-size: 1em;
-    cursor: pointer;
-    transition: 0.2s;
-  }
-  button:hover { background: #8c73e6; }
-  button.active { background: #ff8cb0; }
-
-  select, input[type="text"] {
-    margin-top: 15px;
-    padding: 8px 12px;
-    border-radius: 8px;
-    border: 1px solid #ccc;
-    font-size: 1em;
-    width: 90%;
-    max-width: 400px;
-  }
-
-  #trackList {
-    margin-top: 20px;
-    max-height: 250px;
-    overflow-y: auto;
-    text-align: left;
-  }
-
-  .track {
-    background: white;
-    border-radius: 10px;
-    padding: 10px;
-    margin: 6px 0;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-    cursor: pointer;
-    transition: background 0.2s;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-
-  .track:hover { background: #f3f0ff; }
-
-  .track.playing {
-    background: linear-gradient(90deg, #e8e2ff, #fff);
-    border-left: 5px solid #a58ff7;
-  }
-
-  .favorite { color: #ccc; cursor: pointer; font-size: 1.2em; }
-  .favorite.active { color: #ff6781; }
-
-  footer {
-    text-align: center;
-    margin: 30px 0;
-    color: #666;
-  }
+  footer{ text-align:center; color:#777; margin:26px 0; }
+  @media(max-width:880px){ #trackArea{ flex-direction:column } #eqPanel{ order:2; width:100%; } }
 </style>
 </head>
 <body>
 
-<canvas id="wave"></canvas>
-
-<!-- 背景の泡 -->
-<div class="bubble" style="width:80px;height:80px;top:10%;left:10%;animation-duration:8s;"></div>
-<div class="bubble" style="width:120px;height:120px;top:30%;left:80%;animation-duration:10s;"></div>
-<div class="bubble" style="width:60px;height:60px;top:70%;left:30%;animation-duration:7s;"></div>
+<canvas id="waveCanvas"></canvas>
 
 <h1>ミュージックプレイヤー 🎧</h1>
 
 <div id="player">
-  <video id="videoPlayer" controls></video>
-  <div id="info"></div>
+  <!-- video要素。playsinlineを付けてモバイルでのインライン再生（バックグラウンド再生の可能性向上） -->
+  <video id="mediaEl" controls playsinline webkit-playsinline crossorigin="anonymous"></video>
 
-  <div id="progressContainer">
-    <div id="progressBar"></div>
-  </div>
-  <div id="timeDisplay">
-    <span id="currentTime">0:00</span>
-    <span id="duration">0:00</span>
-  </div>
+  <div id="info">曲名 ／ アーティスト</div>
+
+  <div id="progressContainer"><div id="progressBar"></div></div>
+  <div id="timeDisplay"><span id="curTime">0:00</span><span id="totTime">0:00</span></div>
 
   <div id="controls">
     <button id="prevBtn">⏮ 前へ</button>
@@ -230,261 +86,388 @@
     <button id="favModeBtn">❤️ お気に入りのみ</button>
   </div>
 
-  <!-- 🔊 音量・速度設定 -->
-  <div id="settings">
-    <div class="sliderContainer">
-      <label>🔊 音量: <span id="volumeValue"></span></label>
-      <input type="range" id="volumeSlider" min="0" max="1" step="0.01">
-    </div>
-    <div class="sliderContainer">
-      <label>⚡ 再生速度: <span id="speedValue"></span>x</label>
-      <input type="range" id="speedSlider" min="0.5" max="2" step="0.1">
+  <div id="trackArea">
+    <div id="trackList"></div>
+
+    <div id="eqPanel">
+      <h3 style="margin:0 0 8px 0;">EQ（5バンド）</h3>
+      <!-- 各バンドのスライダー -->
+      <div class="sliderContainer">
+        <label>Low (〜150Hz) : <span id="band0Val">0 dB</span></label>
+        <input type="range" id="band0" min="-12" max="12" step="0.5" />
+      </div>
+      <div class="sliderContainer">
+        <label>Low-Mid (150–500Hz) : <span id="band1Val">0 dB</span></label>
+        <input type="range" id="band1" min="-12" max="12" step="0.5" />
+      </div>
+      <div class="sliderContainer">
+        <label>Mid (500–2kHz) : <span id="band2Val">0 dB</span></label>
+        <input type="range" id="band2" min="-12" max="12" step="0.5" />
+      </div>
+      <div class="sliderContainer">
+        <label>High-Mid (2k–6kHz) : <span id="band3Val">0 dB</span></label>
+        <input type="range" id="band3" min="-12" max="12" step="0.5" />
+      </div>
+      <div class="sliderContainer">
+        <label>High (6kHz〜) : <span id="band4Val">0 dB</span></label>
+        <input type="range" id="band4" min="-12" max="12" step="0.5" />
+      </div>
+      <div style="text-align:center;margin-top:8px;">
+        <button id="resetEQ">EQ リセット</button>
+      </div>
     </div>
   </div>
 
-  <input type="text" id="searchBox" placeholder="🔍 曲名やアーティストで検索..." />
-  <select id="artistFilter">
-    <option value="">すべてのアーティスト</option>
-  </select>
-
-  <div id="trackList"></div>
+  <!-- 検索 / フィルタ -->
+  <div style="margin-top:12px;">
+    <input id="searchBox" type="text" placeholder="🔍 曲名やアーティストで検索..." style="width:60%;max-width:360px;padding:8px;border-radius:8px;border:1px solid #ddd;">
+    <select id="artistFilter" style="padding:8px;border-radius:8px;border:1px solid #ddd;">
+      <option value="">すべてのアーティスト</option>
+    </select>
+  </div>
 </div>
 
-<footer>© 2025 MusicProject 🎶</footer>
+<footer>© 2025 MusicProject</footer>
 
 <script>
-let tracks = [];
-let filteredTracks = [];
+/* =========================
+   プレイヤー + EQ + 波形実装
+   ========================= */
+
+const mediaEl = document.getElementById('mediaEl');
+const info = document.getElementById('info');
+const progressBar = document.getElementById('progressBar');
+const progressContainer = document.getElementById('progressContainer');
+const curTime = document.getElementById('curTime');
+const totTime = document.getElementById('totTime');
+
+const playBtn = document.getElementById('playBtn');
+const prevBtn = document.getElementById('prevBtn');
+const nextBtn = document.getElementById('nextBtn');
+const shuffleBtn = document.getElementById('shuffleBtn');
+const repeatBtn = document.getElementById('repeatBtn');
+const favModeBtn = document.getElementById('favModeBtn');
+
+const trackListEl = document.getElementById('trackList');
+const searchBox = document.getElementById('searchBox');
+const artistFilter = document.getElementById('artistFilter');
+
+let tracks = [];          // 外部 tracks.json から読み込み
+let filtered = [];
 let current = 0;
-let favorites = JSON.parse(localStorage.getItem("favorites") || "[]");
-let shuffle = JSON.parse(localStorage.getItem("shuffle") || "false");
-let repeat = localStorage.getItem("repeat") || "off";
-let favMode = JSON.parse(localStorage.getItem("favMode") || "false");
-let volume = parseFloat(localStorage.getItem("volume") || "0.8");
-let speed = parseFloat(localStorage.getItem("speed") || "1.0");
+let favorites = JSON.parse(localStorage.getItem('favorites')||'[]');
+let shuffle = JSON.parse(localStorage.getItem('shuffle')||'false');
+let repeat = localStorage.getItem('repeat') || 'off';
+let favMode = JSON.parse(localStorage.getItem('favMode')||'false');
 
-const player = document.getElementById("videoPlayer");
-const info = document.getElementById("info");
-const list = document.getElementById("trackList");
-const filter = document.getElementById("artistFilter");
-const search = document.getElementById("searchBox");
-const shuffleBtn = document.getElementById("shuffleBtn");
-const repeatBtn = document.getElementById("repeatBtn");
-const favModeBtn = document.getElementById("favModeBtn");
-const progressContainer = document.getElementById("progressContainer");
-const progressBar = document.getElementById("progressBar");
-const currentTimeDisplay = document.getElementById("currentTime");
-const durationDisplay = document.getElementById("duration");
-const volumeSlider = document.getElementById("volumeSlider");
-const volumeValue = document.getElementById("volumeValue");
-const speedSlider = document.getElementById("speedSlider");
-const speedValue = document.getElementById("speedValue");
+let audioCtx = null;
+let sourceNode = null;
+let analyser = null;
+let eqNodes = []; // 5 band
+let frameCaptured = false; // サムネ取得フラグ
 
-async function init() {
-  const res = await fetch("tracks.json");
+/* ========== 初期ロード ========== */
+async function loadTracks() {
+  const res = await fetch('tracks.json');
   tracks = await res.json();
   populateArtistFilter();
   applyFilters();
   loadTrack(0);
-  updateButtons();
-  drawWave();
-  setupAudioControls();
+  updateUIButtons();
 }
-
-function populateArtistFilter() {
-  const artists = [...new Set(tracks.map(t => t.artist))];
-  artists.forEach(a => {
-    const opt = document.createElement("option");
-    opt.value = a;
-    opt.textContent = a;
-    filter.appendChild(opt);
-  });
-}
-
-function renderList(data) {
-  filteredTracks = data;
-  list.innerHTML = "";
-  data.forEach((t, i) => {
-    const div = document.createElement("div");
-    div.className = "track" + (i === current ? " playing" : "");
-    div.innerHTML = `
-      <span>${t.title} ／ ${t.artist}</span>
-      <span class="favorite ${favorites.includes(t.title) ? 'active' : ''}">❤</span>
-    `;
-    div.onclick = (e) => {
-      if (e.target.classList.contains("favorite")) {
-        toggleFavorite(t.title, e.target);
-        e.stopPropagation();
-      } else {
-        current = i;
-        loadTrack(current);
-        player.play();
-      }
-    };
-    list.appendChild(div);
-  });
-}
-
-function loadTrack(index) {
-  const track = filteredTracks[index] || filteredTracks[0];
-  if (!track) return;
-  player.src = track.url;
-  player.volume = volume;
-  player.playbackRate = speed;
-  info.textContent = `${track.title} ／ ${track.artist}`;
-  highlightPlaying();
-}
-
-function toggleFavorite(title, el) {
-  if (favorites.includes(title)) {
-    favorites = favorites.filter(f => f !== title);
-    el.classList.remove("active");
-  } else {
-    favorites.push(title);
-    el.classList.add("active");
+function populateArtistFilter(){
+  const artists = [...new Set(tracks.map(t=>t.artist))].sort();
+  for(const a of artists){
+    const opt = document.createElement('option');
+    opt.value = a; opt.textContent = a;
+    artistFilter.appendChild(opt);
   }
-  localStorage.setItem("favorites", JSON.stringify(favorites));
 }
 
-function applyFilters() {
-  const keyword = search.value.toLowerCase();
-  const artist = filter.value;
-  let result = tracks.filter(t =>
-    (!artist || t.artist === artist) &&
-    (t.title.toLowerCase().includes(keyword) || t.artist.toLowerCase().includes(keyword))
-  );
-  if (favMode) result = result.filter(t => favorites.includes(t.title));
+/* ========== レンダー/操作 ========== */
+function renderList(arr){
+  filtered = arr;
+  trackListEl.innerHTML = '';
+  arr.forEach((t,i)=>{
+    const div = document.createElement('div');
+    div.className = 'track' + (i === current ? ' playing' : '');
+    div.innerHTML = `<div style="flex:1;">${t.title} ／ ${t.artist}</div>
+                     <div style="margin-left:8px;"><span class="fav ${favorites.includes(t.title)?'active':''}">❤</span></div>`;
+    // クリック処理
+    div.addEventListener('click',(e)=>{
+      if(e.target.classList.contains('fav')){
+        toggleFav(t.title, e.target);
+        e.stopPropagation();
+        return;
+      }
+      current = i;
+      loadTrack(current);
+      mediaEl.play();
+    });
+    trackListEl.appendChild(div);
+  });
+}
+
+function toggleFav(title, el){
+  if(favorites.includes(title)){ favorites = favorites.filter(x=>x!==title); el.classList.remove('active'); }
+  else { favorites.push(title); el.classList.add('active'); }
+  localStorage.setItem('favorites', JSON.stringify(favorites));
+}
+
+/* ========== ロード曲セット ========== */
+function loadTrack(index){
+  if(!filtered || filtered.length===0) return;
+  index = Math.max(0, Math.min(filtered.length-1, index));
+  current = index;
+  const t = filtered[current];
+  mediaEl.src = t.url;
+  info.textContent = `${t.title} ／ ${t.artist}`;
+  highlightPlaying();
+  // リセットフレームキャプチャフラグ（再生開始後10秒でキャプチャ）
+  frameCaptured = false;
+  // Media Session metadata の初期セット（画像は後で差し替え）
+  setMediaSessionMetadata(t.title, t.artist, null);
+}
+
+/* ハイライト更新 */
+function highlightPlaying(){
+  document.querySelectorAll('.track').forEach((el,i)=> el.classList.toggle('playing', i===current));
+}
+
+/* ========== フィルタ/検索 ========== */
+searchBox.oninput = applyFilters;
+artistFilter.onchange = applyFilters;
+function applyFilters(){
+  const kw = (searchBox.value || '').toLowerCase();
+  const artist = artistFilter.value;
+  let result = tracks.filter(t => (!artist || t.artist===artist) && (t.title.toLowerCase().includes(kw) || t.artist.toLowerCase().includes(kw)));
+  if(favMode) result = result.filter(t=> favorites.includes(t.title));
   renderList(result);
 }
 
-function updateButtons() {
-  shuffleBtn.classList.toggle("active", shuffle);
-  favModeBtn.classList.toggle("active", favMode);
-  repeatBtn.textContent = repeat === "one" ? "🔂 リピート: 1曲" :
-                          repeat === "all" ? "🔁 リピート: 全体" : "🔁 リピート: オフ";
-}
-
-function nextTrack() {
-  if (shuffle) current = Math.floor(Math.random() * filteredTracks.length);
-  else current = (current + 1) % filteredTracks.length;
+/* ========== 再生制御 & UI更新 ========== */
+playBtn.onclick = async ()=> {
+  // AudioContextはユーザー操作で作る（ブラウザ制約回避）
+  if(!audioCtx) await setupAudioGraph();
+  if(mediaEl.paused) await mediaEl.play();
+  else mediaEl.pause();
+};
+prevBtn.onclick = ()=> {
+  current = (current - 1 + filtered.length) % filtered.length;
   loadTrack(current);
-  player.play();
+  mediaEl.play();
+};
+nextBtn.onclick = ()=> {
+  if(shuffle) current = Math.floor(Math.random() * filtered.length);
+  else current = (current+1)%filtered.length;
+  loadTrack(current); mediaEl.play();
+};
+shuffleBtn.onclick = ()=> { shuffle=!shuffle; localStorage.setItem('shuffle', JSON.stringify(shuffle)); updateUIButtons(); };
+repeatBtn.onclick = ()=> { repeat = (repeat==='off'?'one':(repeat==='one'?'all':'off')); localStorage.setItem('repeat', repeat); updateUIButtons(); };
+favModeBtn.onclick = ()=> { favMode = !favMode; localStorage.setItem('favMode', JSON.stringify(favMode)); applyFilters(); updateUIButtons(); };
+
+function updateUIButtons(){
+  shuffleBtn.classList.toggle('active', shuffle);
+  favModeBtn.classList.toggle('active', favMode);
+  repeatBtn.textContent = repeat==='one' ? '🔂 リピート: 1曲' : repeat==='all' ? '🔁 リピート: 全体' : '🔁 リピート: オフ';
 }
 
-function highlightPlaying() {
-  document.querySelectorAll(".track").forEach((el, i) => {
-    el.classList.toggle("playing", i === current);
-  });
-}
-
-document.getElementById("playBtn").onclick = () => player.paused ? player.play() : player.pause();
-document.getElementById("prevBtn").onclick = () => {
-  current = (current - 1 + filteredTracks.length) % filteredTracks.length;
-  loadTrack(current); player.play();
-};
-document.getElementById("nextBtn").onclick = nextTrack;
-
-player.onended = () => {
-  if (repeat === "one") player.play();
-  else nextTrack();
+/* 自動次曲（終了時） */
+mediaEl.onended = ()=>{
+  if(repeat==='one'){ mediaEl.play(); return; }
+  if(repeat==='all'){ nextBtn.onclick(); return; }
+  // repeat off => 次の曲へ自動
+  nextBtn.onclick();
 };
 
-search.oninput = applyFilters;
-filter.onchange = applyFilters;
-
-shuffleBtn.onclick = () => {
-  shuffle = !shuffle;
-  localStorage.setItem("shuffle", shuffle);
-  updateButtons();
+/* progress */
+mediaEl.ontimeupdate = ()=>{
+  if(!mediaEl.duration || isNaN(mediaEl.duration)) return;
+  const pct = (mediaEl.currentTime / mediaEl.duration) * 100;
+  progressBar.style.width = pct + '%';
+  curTime.textContent = formatTime(mediaEl.currentTime);
+  totTime.textContent = formatTime(mediaEl.duration);
+  // 10秒タイマーでサムネ取得
+  if(!frameCaptured && mediaEl.currentTime >= 10){
+    tryCaptureFrame();
+    frameCaptured = true;
+  }
 };
-
-repeatBtn.onclick = () => {
-  repeat = repeat === "off" ? "one" : repeat === "one" ? "all" : "off";
-  localStorage.setItem("repeat", repeat);
-  updateButtons();
-};
-
-favModeBtn.onclick = () => {
-  favMode = !favMode;
-  localStorage.setItem("favMode", favMode);
-  applyFilters();
-  updateButtons();
-};
-
-/* 再生バー制御 */
-player.ontimeupdate = () => {
-  if (!player.duration) return;
-  const percent = (player.currentTime / player.duration) * 100;
-  progressBar.style.width = percent + "%";
-  currentTimeDisplay.textContent = formatTime(player.currentTime);
-  durationDisplay.textContent = formatTime(player.duration);
-};
-
-progressContainer.onclick = (e) => {
+progressContainer.onclick = (e)=>{
   const rect = progressContainer.getBoundingClientRect();
   const pos = (e.clientX - rect.left) / rect.width;
-  player.currentTime = pos * player.duration;
+  if(mediaEl.duration) mediaEl.currentTime = pos * mediaEl.duration;
 };
+function formatTime(s){ if(!s || isNaN(s)) return '0:00'; const m=Math.floor(s/60); const sec=Math.floor(s%60); return `${m}:${String(sec).padStart(2,'0')}`; }
 
-function formatTime(sec) {
-  const m = Math.floor(sec / 60);
-  const s = Math.floor(sec % 60);
-  return `${m}:${s.toString().padStart(2,"0")}`;
+/* ========== Web Audio API 構築（EQ + Analyser） ========== */
+async function setupAudioGraph(){
+  // 既に作ってあれば何もしない
+  if(audioCtx) return;
+  audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  // media element source
+  sourceNode = audioCtx.createMediaElementSource(mediaEl);
+
+  // EQ バンド周波数（中心周波数を選定）
+  const freqs = [100, 300, 1000, 3000, 8000]; // 5バンド（概ね低域→高域）
+  eqNodes = freqs.map((f, idx)=>{
+    const b = audioCtx.createBiquadFilter();
+    if(idx===0){ b.type = 'lowshelf'; b.frequency.value = freqs[0]; }
+    else if(idx===4){ b.type = 'highshelf'; b.frequency.value = freqs[4]; }
+    else { b.type = 'peaking'; b.frequency.value = freqs[idx]; b.Q.value = 1.0; }
+    b.gain.value = parseFloat(localStorage.getItem('eq_band_'+idx) || '0'); // 保存された値
+    return b;
+  });
+
+  // analyser
+  analyser = audioCtx.createAnalyser();
+  analyser.fftSize = 2048;
+
+  // 接続: source -> eq0 -> eq1 -> ... -> eq4 -> analyser -> destination
+  let node = sourceNode;
+  eqNodes.forEach(e=>{
+    node.connect(e);
+    node = e;
+  });
+  node.connect(analyser);
+  analyser.connect(audioCtx.destination);
+
+  // EQ UIとハンドラ初期化
+  setupEQUI();
+  // 波形描画を analyser に合わせて行う
+  drawAudioWave();
+  // MediaSession action handlers（AudioContext作成後だと安定）
+  setupMediaSessionActions();
 }
 
-/* 音量・速度設定 */
-function setupAudioControls() {
-  volumeSlider.value = volume;
-  volumeValue.textContent = Math.round(volume * 100);
-  speedSlider.value = speed;
-  speedValue.textContent = speed.toFixed(1);
-
-  volumeSlider.oninput = () => {
-    volume = parseFloat(volumeSlider.value);
-    player.volume = volume;
-    volumeValue.textContent = Math.round(volume * 100);
-    localStorage.setItem("volume", volume);
-  };
-
-  speedSlider.oninput = () => {
-    speed = parseFloat(speedSlider.value);
-    player.playbackRate = speed;
-    speedValue.textContent = speed.toFixed(1);
-    localStorage.setItem("speed", speed);
-  };
-}
-
-/* 🌊 波形アニメーション */
-function drawWave() {
-  const canvas = document.getElementById("wave");
-  const ctx = canvas.getContext("2d");
-  let w, h, t = 0;
-  function resize() {
-    w = canvas.width = window.innerWidth;
-    h = canvas.height = window.innerHeight;
+/* ========== EQ UI ========== */
+function setupEQUI(){
+  for(let i=0;i<5;i++){
+    const slider = document.getElementById('band'+i);
+    const label = document.getElementById('band'+i+'Val');
+    // 既にlocalStorage値が入っているならセット
+    const saved = localStorage.getItem('eq_band_'+i);
+    const val = saved !== null ? Number(saved) : 0;
+    slider.value = val;
+    label.textContent = `${val} dB`;
+    // イベント
+    slider.oninput = ()=>{
+      const v = parseFloat(slider.value);
+      eqNodes[i].gain.value = v;
+      label.textContent = `${v} dB`;
+      localStorage.setItem('eq_band_'+i, v);
+    };
   }
-  window.onresize = resize;
-  resize();
+  document.getElementById('resetEQ').onclick = ()=>{
+    for(let i=0;i<5;i++){ document.getElementById('band'+i).value = 0; eqNodes[i].gain.value = 0; document.getElementById('band'+i+'Val').textContent = '0 dB'; localStorage.removeItem('eq_band_'+i); }
+  };
+}
 
-  function draw() {
-    t += 0.02;
-    ctx.clearRect(0, 0, w, h);
-    for (let i = 0; i < 3; i++) {
+/* ========== 音連動波形描画（analyser） ========== */
+function drawAudioWave(){
+  const canvas = document.getElementById('waveCanvas');
+  const ctx = canvas.getContext('2d');
+  function resize(){ canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+  window.addEventListener('resize', resize); resize();
+
+  const bufferLen = analyser.frequencyBinCount;
+  const data = new Uint8Array(bufferLen);
+
+  function draw(){
+    requestAnimationFrame(draw);
+    analyser.getByteTimeDomainData(data);
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    // 背景薄い線
+    ctx.lineWidth = 2;
+    for(let layer=0; layer<3; layer++){
       ctx.beginPath();
-      for (let x = 0; x < w; x++) {
-        const y = h/2 + Math.sin(x * 0.01 + t + i) * 20 * (i+1);
-        ctx.lineTo(x, y);
+      const offsetY = canvas.height*0.5 + (layer-1)*40;
+      for(let i=0;i<bufferLen;i++){
+        const x = (i / bufferLen) * canvas.width;
+        const v = data[i] / 128.0; // 0..2
+        const y = offsetY + (v - 1) * 80 * (1/(layer+1));
+        if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
       }
-      ctx.strokeStyle = `rgba(120,120,255,${0.15 + i*0.1})`;
-      ctx.lineWidth = 2;
+      ctx.strokeStyle = `rgba(${120+layer*30},120,255,${0.08 + layer*0.08})`;
       ctx.stroke();
     }
-    requestAnimationFrame(draw);
   }
   draw();
 }
 
-init();
+/* ========== Media Session API（ロック画面表示等） ========== */
+function setMediaSessionMetadata(title, artist, artworkUrl){
+  if('mediaSession' in navigator){
+    try{
+      const metadata = new window.MediaMetadata({
+        title: title || '',
+        artist: artist || '',
+        album: ''
+      });
+      if(artworkUrl){
+        metadata.artwork = [{ src: artworkUrl, sizes: '512x512', type: 'image/png' }];
+      }
+      navigator.mediaSession.metadata = metadata;
+      // playback state sync
+      navigator.mediaSession.playbackState = mediaEl.paused ? 'paused' : 'playing';
+    }catch(e){
+      console.warn('MediaMetadata error', e);
+    }
+  }
+}
+function setupMediaSessionActions(){
+  if(!('mediaSession' in navigator)) return;
+  navigator.mediaSession.setActionHandler('play', ()=> mediaEl.play());
+  navigator.mediaSession.setActionHandler('pause', ()=> mediaEl.pause());
+  navigator.mediaSession.setActionHandler('previoustrack', ()=> { prevBtn.onclick(); });
+  navigator.mediaSession.setActionHandler('nexttrack', ()=> { nextBtn.onclick(); });
+  navigator.mediaSession.setActionHandler('seekto', (details)=> {
+    if(details.seekTime !== undefined) mediaEl.currentTime = details.seekTime;
+  });
+}
+
+/* ========== サムネ画像を 10秒時に取得してMedia Sessionにセット ========== */
+async function tryCaptureFrame(){
+  // 動的に canvas に現在の video フレームを描画 → dataURL 生成 → MediaMetadata artwork にセット
+  try{
+    // CORSによりセキュリティ制限あると失敗する（catchで握り潰す）
+    const v = mediaEl;
+    const c = document.createElement('canvas');
+    c.width = v.videoWidth || 512;
+    c.height = v.videoHeight || 512;
+    const ctx = c.getContext('2d');
+    ctx.drawImage(v, 0, 0, c.width, c.height);
+    const dataUrl = c.toDataURL('image/png');
+    // Object URL を作って使う（いくつかの実装は URL のほうが好まれる）
+    const res = await fetch(dataUrl);
+    const blob = await res.blob();
+    const urlObj = URL.createObjectURL(blob);
+    // set as Media Session artwork
+    const cur = filtered[current];
+    setMediaSessionMetadata(cur.title, cur.artist, urlObj);
+    // 余裕があれば DOM にも表示（省略可）
+  }catch(e){
+    console.warn('frame capture failed (CORS?)', e);
+  }
+}
+
+/* ========== MediaSession 再生状態同期 ========== */
+mediaEl.onplay = ()=> { if('mediaSession' in navigator) navigator.mediaSession.playbackState = 'playing'; playBtn.textContent = '⏸ / ▶️'; };
+mediaEl.onpause = ()=> { if('mediaSession' in navigator) navigator.mediaSession.playbackState = 'paused'; playBtn.textContent = '▶️ / ⏸'; };
+mediaEl.onwaiting = ()=> { /* buffering */ };
+
+/* ========== 初期化 ========== */
+loadTracks();
+
+/* ========== 検索/フィルタの初期表示 ========== */
+document.addEventListener('DOMContentLoaded', ()=> {
+  // ローカルに保存された再生モード・設定反映
+  shuffle = JSON.parse(localStorage.getItem('shuffle')||'false');
+  favMode = JSON.parse(localStorage.getItem('favMode')||'false');
+  repeat = localStorage.getItem('repeat') || 'off';
+  updateUIButtons();
+});
 </script>
+
 </body>
 </html>
