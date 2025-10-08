@@ -1,165 +1,272 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>やわらかミュージックプレイヤー 🎶</title>
-  <style>
-    body {
-      font-family: "Hiragino Sans", "Noto Sans JP", sans-serif;
-      background: linear-gradient(135deg, #f7f0ff, #f0fff6);
-      color: #333;
-      text-align: center;
-      padding: 40px 10px;
-    }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ミュージックプレイヤー 🎧</title>
+<style>
+  body {
+    font-family: "Hiragino Sans", "Noto Sans JP", sans-serif;
+    margin: 0;
+    padding: 0;
+    background: linear-gradient(135deg, #fcecff, #eafff8, #e0e8ff);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
 
-    h1 {
-      font-size: 2em;
-      margin-bottom: 0.5em;
-      color: #6a5acd;
-    }
+  /* 背景アニメーション */
+  @keyframes float {
+    0% { transform: translateY(0) rotate(0deg); opacity: 0.7; }
+    50% { transform: translateY(-20px) rotate(10deg); opacity: 1; }
+    100% { transform: translateY(0) rotate(-10deg); opacity: 0.7; }
+  }
 
-    p {
-      margin-bottom: 2em;
-      color: #666;
-    }
+  .bubble {
+    position: absolute;
+    background: rgba(255, 255, 255, 0.6);
+    border-radius: 50%;
+    animation: float 6s ease-in-out infinite;
+    z-index: 0;
+  }
 
-    #player {
-      background: white;
-      border-radius: 16px;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-      padding: 20px;
-      max-width: 600px;
-      margin: 0 auto;
-    }
+  h1 {
+    text-align: center;
+    font-size: 2em;
+    color: #6a5acd;
+    padding-top: 30px;
+  }
 
-    video {
-      width: 100%;
-      border-radius: 12px;
-      outline: none;
-      background: #000;
-    }
+  #player {
+    background: rgba(255,255,255,0.85);
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    max-width: 700px;
+    margin: 20px auto;
+    padding: 20px;
+    text-align: center;
+    position: relative;
+    z-index: 1;
+  }
 
-    #info {
-      margin-top: 1em;
-      font-size: 1.1em;
-      color: #444;
-    }
+  video {
+    width: 100%;
+    border-radius: 12px;
+    background: #000;
+  }
 
-    #controls {
-      margin-top: 1.5em;
-      display: flex;
-      justify-content: center;
-      gap: 1em;
-    }
+  #info {
+    font-size: 1.2em;
+    margin-top: 10px;
+    color: #444;
+  }
 
-    button {
-      background: #a58ff7;
-      color: white;
-      border: none;
-      border-radius: 8px;
-      padding: 10px 20px;
-      font-size: 1em;
-      cursor: pointer;
-      transition: 0.2s;
-    }
+  #controls {
+    margin-top: 15px;
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+  }
 
-    button:hover {
-      background: #7d66d9;
-    }
+  button {
+    background: #a58ff7;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 16px;
+    font-size: 1em;
+    cursor: pointer;
+    transition: 0.2s;
+  }
+  button:hover {
+    background: #8c73e6;
+  }
 
-    select {
-      margin-top: 20px;
-      padding: 8px 12px;
-      border-radius: 6px;
-      border: 1px solid #ccc;
-      font-size: 1em;
-    }
+  select, input[type="text"] {
+    margin-top: 15px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    font-size: 1em;
+    width: 90%;
+    max-width: 400px;
+  }
 
-    footer {
-      margin-top: 40px;
-      font-size: 0.85em;
-      color: #888;
-    }
-  </style>
+  #trackList {
+    margin-top: 20px;
+    max-height: 250px;
+    overflow-y: auto;
+    text-align: left;
+  }
+
+  .track {
+    background: white;
+    border-radius: 10px;
+    padding: 10px;
+    margin: 6px 0;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    cursor: pointer;
+    transition: background 0.2s;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .track:hover {
+    background: #f3f0ff;
+  }
+
+  .favorite {
+    color: #ccc;
+    cursor: pointer;
+    font-size: 1.2em;
+  }
+
+  .favorite.active {
+    color: #ff6781;
+  }
+
+  footer {
+    text-align: center;
+    margin: 30px 0;
+    color: #666;
+  }
+
+</style>
 </head>
 <body>
 
-  <h1>🎵 やわらかミュージックプレイヤー</h1>
-  <p>好きな曲を選んで、リラックスしてね。</p>
+  <!-- 背景にふわふわする泡 -->
+  <div class="bubble" style="width:80px;height:80px;top:10%;left:10%;animation-duration:8s;"></div>
+  <div class="bubble" style="width:120px;height:120px;top:30%;left:80%;animation-duration:10s;"></div>
+  <div class="bubble" style="width:60px;height:60px;top:70%;left:30%;animation-duration:7s;"></div>
+
+  <h1>🌷 ミュージックプレイヤー 🌷</h1>
 
   <div id="player">
     <video id="videoPlayer" controls></video>
     <div id="info"></div>
 
     <div id="controls">
-      <button id="prevBtn">⏮ 前の曲</button>
+      <button id="prevBtn">⏮ 前へ</button>
       <button id="playBtn">▶️ / ⏸</button>
-      <button id="nextBtn">⏭ 次の曲</button>
+      <button id="nextBtn">⏭ 次へ</button>
     </div>
 
-    <select id="trackSelect"></select>
+    <input type="text" id="searchBox" placeholder="🔍 曲名やアーティストで検索..." />
+
+    <select id="artistFilter">
+      <option value="">すべてのアーティスト</option>
+    </select>
+
+    <div id="trackList"></div>
   </div>
 
-  <footer>© 2025 やわらかMusicProject</footer>
+  <footer>© 2025 MusicProject 🎶</footer>
 
   <script>
     let tracks = [];
+    let filteredTracks = [];
     let current = 0;
+    let favorites = JSON.parse(localStorage.getItem("favorites") || "[]");
+
     const player = document.getElementById("videoPlayer");
     const info = document.getElementById("info");
-    const select = document.getElementById("trackSelect");
+    const list = document.getElementById("trackList");
+    const filter = document.getElementById("artistFilter");
+    const search = document.getElementById("searchBox");
 
-    async function loadTracks() {
+    async function init() {
       const res = await fetch("tracks.json");
       tracks = await res.json();
-      populateSelect();
+      populateArtistFilter();
+      renderList(tracks);
       loadTrack(0);
     }
 
-    function populateSelect() {
-      select.innerHTML = tracks.map((t, i) =>
-        `<option value="${i}">${t.title} - ${t.artist}</option>`
-      ).join("");
+    function populateArtistFilter() {
+      const artists = [...new Set(tracks.map(t => t.artist))];
+      artists.forEach(a => {
+        const opt = document.createElement("option");
+        opt.value = a;
+        opt.textContent = a;
+        filter.appendChild(opt);
+      });
+    }
+
+    function renderList(data) {
+      filteredTracks = data;
+      list.innerHTML = "";
+      data.forEach((t, i) => {
+        const div = document.createElement("div");
+        div.className = "track";
+        div.innerHTML = `
+          <span>${t.title} ／ ${t.artist}</span>
+          <span class="favorite ${favorites.includes(t.title) ? 'active' : ''}">❤</span>
+        `;
+        div.onclick = (e) => {
+          if (e.target.classList.contains("favorite")) {
+            toggleFavorite(t.title, e.target);
+            e.stopPropagation();
+          } else {
+            current = i;
+            loadTrack(current);
+            player.play();
+          }
+        };
+        list.appendChild(div);
+      });
     }
 
     function loadTrack(index) {
-      current = index;
-      const track = tracks[current];
+      const track = filteredTracks[index] || filteredTracks[0];
+      if (!track) return;
       player.src = track.url;
       info.textContent = `${track.title} ／ ${track.artist}`;
-      select.value = current;
     }
 
-    document.getElementById("playBtn").onclick = () => {
-      if (player.paused) player.play();
-      else player.pause();
-    };
+    function toggleFavorite(title, el) {
+      if (favorites.includes(title)) {
+        favorites = favorites.filter(f => f !== title);
+        el.classList.remove("active");
+      } else {
+        favorites.push(title);
+        el.classList.add("active");
+      }
+      localStorage.setItem("favorites", JSON.stringify(favorites));
+    }
 
+    // 再生制御
+    document.getElementById("playBtn").onclick = () => player.paused ? player.play() : player.pause();
     document.getElementById("prevBtn").onclick = () => {
-      current = (current - 1 + tracks.length) % tracks.length;
-      loadTrack(current);
-      player.play();
+      current = (current - 1 + filteredTracks.length) % filteredTracks.length;
+      loadTrack(current); player.play();
     };
-
     document.getElementById("nextBtn").onclick = () => {
-      current = (current + 1) % tracks.length;
-      loadTrack(current);
-      player.play();
-    };
-
-    select.onchange = () => {
-      loadTrack(parseInt(select.value));
-      player.play();
+      current = (current + 1) % filteredTracks.length;
+      loadTrack(current); player.play();
     };
 
     player.onended = () => {
-      current = (current + 1) % tracks.length;
+      current = (current + 1) % filteredTracks.length;
       loadTrack(current);
       player.play();
     };
 
-    loadTracks();
+    // 検索機能
+    search.oninput = () => applyFilters();
+    filter.onchange = () => applyFilters();
+
+    function applyFilters() {
+      const keyword = search.value.toLowerCase();
+      const artist = filter.value;
+      const result = tracks.filter(t => 
+        (!artist || t.artist === artist) &&
+        (t.title.toLowerCase().includes(keyword) || t.artist.toLowerCase().includes(keyword))
+      );
+      renderList(result);
+    }
+
+    init();
   </script>
 </body>
 </html>
