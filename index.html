@@ -9,7 +9,7 @@
 <link rel="icon" href="https://raw.githubusercontent.com/j20252097/a/refs/heads/main/Guild.png" />
 <link rel="apple-touch-icon" href="https://raw.githubusercontent.com/j20252097/a/refs/heads/main/Guild.png" />
 
-<!-- ✅ PWA対応：ホーム画面追加用 -->
+<!-- ✅ PWA対応 -->
 <link rel="manifest" href="manifest.json" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
@@ -19,118 +19,48 @@
 <style>
 body {
   font-family: "Hiragino Sans", "Noto Sans JP", sans-serif;
-  margin: 0;
-  padding: 0;
+  margin: 0; padding: 0;
   background: linear-gradient(135deg,#fcecff,#eafff8,#e0e8ff);
   min-height: 100vh;
-  overflow-x: hidden;
-  overflow-y: auto;
+  overflow-x: hidden; overflow-y: auto;
 }
-
-/* 波形アニメーション */
 canvas#wave {
-  position: fixed;
-  top: 0; left: 0;
+  position: fixed; top: 0; left: 0;
   width: 100vw; height: 100vh;
-  z-index: 0;
-  opacity: 0.4;
+  z-index: 0; opacity: 0.4;
   pointer-events: none;
 }
-
-h1 {
-  text-align: center;
-  font-size: 2em;
-  color: #6a5acd;
-  padding-top: 30px;
-  z-index: 2;
-  position: relative;
-}
-
+h1 { text-align: center; font-size: 2em; color: #6a5acd; padding-top: 30px; z-index: 2; position: relative; }
 #player {
   background: rgba(255,255,255,0.9);
   border-radius: 16px;
   box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-  max-width: 700px;
-  margin: 20px auto 60px;
-  padding: 20px;
-  text-align: center;
-  position: relative;
-  z-index: 2;
+  max-width: 700px; margin: 20px auto 60px; padding: 20px;
+  text-align: center; position: relative; z-index: 2;
 }
-
-video {
-  width: 100%;
-  border-radius: 12px;
-  background: #000;
-}
-
+video { width: 100%; border-radius: 12px; background: #000; }
 #info { font-size: 1.2em; margin-top: 10px; color: #444; }
-
-/* 再生バー */
-#progressContainer {
-  width: 100%; height: 10px;
-  background: #ddd; border-radius: 5px;
-  margin: 10px 0; cursor: pointer;
-}
-#progressBar {
-  height: 100%; width: 0%;
-  background: linear-gradient(90deg,#a58ff7,#ff8cb0);
-  border-radius: 5px;
-}
-#timeDisplay {
-  display: flex; justify-content: space-between;
-  font-size: 0.9em; color: #666;
-}
-
-/* コントロール類 */
-#controls,#extraControls,#settings,#eqPanel {
-  display: flex;
-  justify-content: center;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-top: 15px;
-}
+#progressContainer { width: 100%; height: 10px; background: #ddd; border-radius: 5px; margin: 10px 0; cursor: pointer; }
+#progressBar { height: 100%; width: 0%; background: linear-gradient(90deg,#a58ff7,#ff8cb0); border-radius: 5px; }
+#timeDisplay { display: flex; justify-content: space-between; font-size: 0.9em; color: #666; }
 button {
-  background: #a58ff7; color: #fff;
-  border: none; border-radius: 8px;
-  padding: 10px 16px;
-  font-size: 1em; cursor: pointer;
-  transition: 0.2s;
+  background: #a58ff7; color: #fff; border: none; border-radius: 8px;
+  padding: 10px 16px; font-size: 1em; cursor: pointer; transition: 0.2s;
 }
-button:hover { background: #8c73e6; }
-button.active { background: #ff8cb0; }
-
-.sliderContainer {
-  width: 90%;
-  max-width: 400px;
-  text-align: left;
+button:hover { background: #8c73e6; } button.active { background: #ff8cb0; }
+#controls,#extraControls,#settings,#eqPanel {
+  display: flex; justify-content: center; flex-wrap: wrap; gap: 10px; margin-top: 15px;
 }
-.sliderContainer label {
-  font-size: 0.9em;
-  color: #555;
-}
-input[type="range"] {
-  width: 100%;
-  accent-color: #a58ff7;
-}
-
-/* 曲リスト */
+.sliderContainer { width: 90%; max-width: 400px; text-align: left; }
+.sliderContainer label { font-size: 0.9em; color: #555; }
+input[type="range"] { width: 100%; accent-color: #a58ff7; }
 #trackList {
-  margin-top: 20px;
-  max-height: 250px;
-  overflow-y: auto;
-  text-align: left;
+  margin-top: 20px; max-height: 250px; overflow-y: auto; text-align: left;
 }
 .track {
-  background: #fff;
-  border-radius: 10px;
-  padding: 10px;
-  margin: 6px 0;
+  background: #fff; border-radius: 10px; padding: 10px; margin: 6px 0;
   box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  cursor: pointer;
+  display: flex; justify-content: space-between; align-items: center; cursor: pointer;
 }
 .track.playing {
   background: linear-gradient(90deg,#e8e2ff,#fff);
@@ -138,18 +68,12 @@ input[type="range"] {
 }
 .favorite { color: #ccc; font-size: 1.2em; cursor: pointer; }
 .favorite.active { color: #ff6781; }
-
-footer {
-  text-align: center;
-  margin: 30px 0;
-  color: #666;
-}
+footer { text-align: center; margin: 30px 0; color: #666; }
 </style>
 </head>
 
 <body>
 <canvas id="wave"></canvas>
-
 <h1>ミュージックプレイヤー 🎧</h1>
 
 <div id="player">
@@ -157,10 +81,7 @@ footer {
   <div id="info"></div>
 
   <div id="progressContainer"><div id="progressBar"></div></div>
-  <div id="timeDisplay">
-    <span id="currentTime">0:00</span>
-    <span id="duration">0:00</span>
-  </div>
+  <div id="timeDisplay"><span id="currentTime">0:00</span><span id="duration">0:00</span></div>
 
   <div id="controls">
     <button id="prevBtn">⏮ 前へ</button>
@@ -185,7 +106,6 @@ footer {
     </div>
   </div>
 
-  <!-- 🎛 EQ パネル -->
   <div id="eqPanel">
     <div class="sliderContainer"><label>低音</label><input type="range" id="eq0" min="-12" max="12" step="1"></div>
     <div class="sliderContainer"><label>中低音</label><input type="range" id="eq1" min="-12" max="12" step="1"></div>
@@ -195,182 +115,115 @@ footer {
 
   <input type="text" id="searchBox" placeholder="🔍 曲名やアーティストで検索..." />
   <select id="artistFilter"><option value="">すべてのアーティスト</option></select>
-
   <div id="trackList"></div>
 </div>
 
 <footer>© 2025 MusicProject 🎶</footer>
 
 <script>
-let tracks=[],filteredTracks=[],current=0;
-let favorites=JSON.parse(localStorage.getItem("favorites")||"[]");
-let shuffle=JSON.parse(localStorage.getItem("shuffle")||"false");
-let repeat=localStorage.getItem("repeat")||"off";
+let tracks=[],filteredTracks=[],current=0,favorites=JSON.parse(localStorage.getItem("favorites")||"[]");
+let shuffle=JSON.parse(localStorage.getItem("shuffle")||"false"),repeat=localStorage.getItem("repeat")||"off";
 let favMode=JSON.parse(localStorage.getItem("favMode")||"false");
-let volume=parseFloat(localStorage.getItem("volume")||"0.8");
-let speed=parseFloat(localStorage.getItem("speed")||"1.0");
-
-const player=document.getElementById("videoPlayer");
-const progressBar=document.getElementById("progressBar");
-const progressContainer=document.getElementById("progressContainer");
-const currentTimeDisplay=document.getElementById("currentTime");
-const durationDisplay=document.getElementById("duration");
-const volumeSlider=document.getElementById("volumeSlider");
-const speedSlider=document.getElementById("speedSlider");
-const volumeValue=document.getElementById("volumeValue");
-const speedValue=document.getElementById("speedValue");
-const shuffleBtn=document.getElementById("shuffleBtn");
-const repeatBtn=document.getElementById("repeatBtn");
-const favModeBtn=document.getElementById("favModeBtn");
-const search=document.getElementById("searchBox");
-const filter=document.getElementById("artistFilter");
-const list=document.getElementById("trackList");
-const info=document.getElementById("info");
-
-let audioCtx,sourceNode,analyser,eqNodes=[];
+let volume=parseFloat(localStorage.getItem("volume")||"0.8"),speed=parseFloat(localStorage.getItem("speed")||"1.0");
+const player=document.getElementById("videoPlayer"),info=document.getElementById("info"),list=document.getElementById("trackList");
+const progressBar=document.getElementById("progressBar"),progressContainer=document.getElementById("progressContainer");
+const currentTimeDisplay=document.getElementById("currentTime"),durationDisplay=document.getElementById("duration");
+const volumeSlider=document.getElementById("volumeSlider"),speedSlider=document.getElementById("speedSlider");
+const volumeValue=document.getElementById("volumeValue"),speedValue=document.getElementById("speedValue");
+let audioCtx,sourceNode,analyser,eqNodes=[],thumbCache={};
 
 async function init(){
-  const res=await fetch("tracks.json");
-  tracks=await res.json();
-  populateArtists();
-  applyFilters();
-  loadTrack(0);
-  setupEQ();
-  drawWave();
-  setupAudioControls();
+  const res=await fetch("tracks.json"); tracks=await res.json();
+  populateArtists(); applyFilters(); loadTrack(0);
+  setupEQ(); drawWave(); setupAudioControls(); updateButtons();
 }
 
-function populateArtists(){
-  const artists=[...new Set(tracks.map(t=>t.artist))];
-  artists.forEach(a=>{
-    const opt=document.createElement("option");
-    opt.value=a; opt.textContent=a;
-    filter.appendChild(opt);
+/* 🎧 MediaSession */
+function updateMediaSession(track,artworkURL){
+  if(!('mediaSession' in navigator)) return;
+  navigator.mediaSession.metadata=new MediaMetadata({
+    title:track.title, artist:track.artist,
+    artwork:[{src:artworkURL||"https://raw.githubusercontent.com/j20252097/a/refs/heads/main/Guild.png",sizes:"512x512",type:"image/png"}]
+  });
+  navigator.mediaSession.setActionHandler('play',()=>player.play());
+  navigator.mediaSession.setActionHandler('pause',()=>player.pause());
+  navigator.mediaSession.setActionHandler('previoustrack',()=>prevTrack());
+  navigator.mediaSession.setActionHandler('nexttrack',()=>nextTrack());
+}
+
+/* 🎞️ 10秒後自動ジャケット生成 */
+function autoCaptureArtwork(track){
+  if(thumbCache[track.url]){updateMediaSession(track,thumbCache[track.url]);return;}
+  player.addEventListener("timeupdate",function captureOnce(){
+    if(player.currentTime>=10){
+      const canvas=document.createElement("canvas");
+      canvas.width=128; canvas.height=128;
+      const ctx=canvas.getContext("2d");
+      ctx.drawImage(player,0,0,canvas.width,canvas.height);
+      canvas.toBlob(blob=>{
+        const url=URL.createObjectURL(blob);
+        thumbCache[track.url]=url;
+        updateMediaSession(track,url);
+      },"image/png");
+      player.removeEventListener("timeupdate",captureOnce);
+    }
   });
 }
 
-function renderList(data){
-  filteredTracks=data; list.innerHTML="";
-  data.forEach((t,i)=>{
-    const div=document.createElement("div");
-    div.className="track"+(i===current?" playing":"");
-    div.innerHTML=`<span>${t.title} ／ ${t.artist}</span><span class="favorite ${favorites.includes(t.title)?'active':''}">❤</span>`;
-    div.onclick=e=>{
-      if(e.target.classList.contains("favorite")){toggleFav(t.title,e.target); e.stopPropagation(); return;}
-      current=i; loadTrack(current); player.play();
-    };
-    list.appendChild(div);
-  });
-}
-
-function loadTrack(index){
-  const track=filteredTracks[index]||filteredTracks[0];
-  if(!track)return;
-  player.src=track.url; player.volume=volume; player.playbackRate=speed;
-  info.textContent=`${track.title} ／ ${track.artist}`;
-  highlight();
-}
-
-function highlight(){
-  document.querySelectorAll(".track").forEach((el,i)=>el.classList.toggle("playing",i===current));
-}
-
-function toggleFav(title,el){
-  if(favorites.includes(title)){favorites=favorites.filter(f=>f!==title);el.classList.remove("active");}
-  else{favorites.push(title);el.classList.add("active");}
-  localStorage.setItem("favorites",JSON.stringify(favorites));
-}
-
-function applyFilters(){
-  const keyword=search.value.toLowerCase();
-  const artist=filter.value;
-  let result=tracks.filter(t=>
-    (!artist||t.artist===artist)&&
-    (t.title.toLowerCase().includes(keyword)||t.artist.toLowerCase().includes(keyword))
-  );
-  if(favMode) result=result.filter(t=>favorites.includes(t.title));
-  renderList(result);
-}
-
-function setupAudioControls(){
-  volumeSlider.value=volume; volumeValue.textContent=Math.round(volume*100);
-  speedSlider.value=speed; speedValue.textContent=speed.toFixed(1);
-  volumeSlider.oninput=()=>{volume=parseFloat(volumeSlider.value);player.volume=volume;volumeValue.textContent=Math.round(volume*100);localStorage.setItem("volume",volume);};
-  speedSlider.oninput=()=>{speed=parseFloat(speedSlider.value);player.playbackRate=speed;speedValue.textContent=speed.toFixed(1);localStorage.setItem("speed",speed);};
-}
-
-/* EQセットアップ */
+/* EQ設定 */
 function setupEQ(){
-  audioCtx=new AudioContext();
-  sourceNode=audioCtx.createMediaElementSource(player);
+  audioCtx=new AudioContext(); sourceNode=audioCtx.createMediaElementSource(player);
   const freqs=[100,300,1000,5000];
-  eqNodes=freqs.map(f=>{
-    const filter=audioCtx.createBiquadFilter();
-    filter.type="peaking"; filter.frequency.value=f; filter.Q.value=1; filter.gain.value=0;
-    return filter;
-  });
-  analyser=audioCtx.createAnalyser();
-  analyser.fftSize=2048;
-  sourceNode.connect(eqNodes[0]);
-  eqNodes.reduce((a,b)=>(a.connect(b),b));
-  eqNodes[eqNodes.length-1].connect(analyser);
-  analyser.connect(audioCtx.destination);
-  for(let i=0;i<eqNodes.length;i++){
-    const s=document.getElementById("eq"+i);
-    s.value=eqNodes[i].gain.value;
-    s.oninput=()=>{eqNodes[i].gain.value=parseFloat(s.value);};
-  }
+  eqNodes=freqs.map(f=>{const filter=audioCtx.createBiquadFilter();filter.type="peaking";filter.frequency.value=f;filter.Q.value=1;filter.gain.value=0;return filter;});
+  analyser=audioCtx.createAnalyser(); analyser.fftSize=2048;
+  sourceNode.connect(eqNodes[0]); eqNodes.reduce((a,b)=>(a.connect(b),b));
+  eqNodes[eqNodes.length-1].connect(analyser); analyser.connect(audioCtx.destination);
+  for(let i=0;i<eqNodes.length;i++){const s=document.getElementById("eq"+i);s.value=eqNodes[i].gain.value;s.oninput=()=>{eqNodes[i].gain.value=parseFloat(s.value);};}
   player.addEventListener("play",()=>audioCtx.resume());
 }
 
-/* 波形アニメーション */
-function drawWave(){
-  const canvas=document.getElementById("wave");
-  const ctx=canvas.getContext("2d");
-  let w,h; function resize(){w=canvas.width=innerWidth;h=canvas.height=innerHeight;}
-  window.onresize=resize; resize();
-  const data=new Uint8Array(2048);
-  function draw(){
-    requestAnimationFrame(draw);
-    if(!analyser)return;
-    analyser.getByteTimeDomainData(data);
-    ctx.clearRect(0,0,w,h);
-    ctx.lineWidth=2; ctx.strokeStyle="rgba(130,120,255,0.2)";
-    ctx.beginPath();
-    for(let i=0;i<data.length;i++){
-      const x=(i/data.length)*w;
-      const y=h/2+(data[i]-128);
-      if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);
-    }
-    ctx.stroke();
-  } draw();
+/* 再生管理 */
+function loadTrack(i){
+  const track=filteredTracks[i]||filteredTracks[0];
+  if(!track)return;
+  player.src=track.url; player.volume=volume; player.playbackRate=speed;
+  info.textContent=`${track.title} ／ ${track.artist}`;
+  updateMediaSession(track); autoCaptureArtwork(track); highlight();
 }
+function nextTrack(){current=(current+1)%filteredTracks.length;loadTrack(current);player.play();}
+function prevTrack(){current=(current-1+filteredTracks.length)%filteredTracks.length;loadTrack(current);player.play();}
+function highlight(){document.querySelectorAll(".track").forEach((el,i)=>el.classList.toggle("playing",i===current));}
 
-/* 再生関連 */
-player.ontimeupdate=()=>{
-  if(!player.duration)return;
-  const percent=(player.currentTime/player.duration)*100;
-  progressBar.style.width=percent+"%";
-  currentTimeDisplay.textContent=format(player.currentTime);
-  durationDisplay.textContent=format(player.duration);
-};
-progressContainer.onclick=e=>{
-  const rect=progressContainer.getBoundingClientRect();
-  player.currentTime=((e.clientX-rect.left)/rect.width)*player.duration;
-};
-function format(sec){const m=Math.floor(sec/60);const s=Math.floor(sec%60);return `${m}:${s.toString().padStart(2,"0")}`;}
+/* UI系 */
+function updateButtons(){
+  document.getElementById("shuffleBtn").classList.toggle("active",shuffle);
+  document.getElementById("favModeBtn").classList.toggle("active",favMode);
+  document.getElementById("repeatBtn").textContent=repeat==="one"?"🔂 リピート: 1曲":repeat==="all"?"🔁 リピート: 全体":"🔁 リピート: オフ";
+}
+document.getElementById("shuffleBtn").onclick=()=>{shuffle=!shuffle;localStorage.setItem("shuffle",shuffle);updateButtons();};
+document.getElementById("repeatBtn").onclick=()=>{repeat=repeat==="off"?"one":repeat==="one"?"all":"off";localStorage.setItem("repeat",repeat);updateButtons();};
+document.getElementById("favModeBtn").onclick=()=>{favMode=!favMode;localStorage.setItem("favMode",favMode);applyFilters();updateButtons();};
 
+/* 検索・リスト */
+function populateArtists(){const artists=[...new Set(tracks.map(t=>t.artist))];artists.forEach(a=>{const o=document.createElement("option");o.value=a;o.textContent=a;artistFilter.appendChild(o);});}
+function applyFilters(){const k=searchBox.value.toLowerCase(),a=artistFilter.value;let r=tracks.filter(t=>(!a||t.artist===a)&&(t.title.toLowerCase().includes(k)||t.artist.toLowerCase().includes(k)));if(favMode)r=r.filter(t=>favorites.includes(t.title));renderList(r);}
+function renderList(d){filteredTracks=d;list.innerHTML="";d.forEach((t,i)=>{const div=document.createElement("div");div.className="track"+(i===current?" playing":"");div.innerHTML=`<span>${t.title} ／ ${t.artist}</span><span class="favorite ${favorites.includes(t.title)?'active':''}">❤</span>`;div.onclick=e=>{if(e.target.classList.contains("favorite")){toggleFav(t.title,e.target);return;}current=i;loadTrack(current);player.play();};list.appendChild(div);});}
+function toggleFav(t,e){if(favorites.includes(t)){favorites=favorites.filter(f=>f!==t);e.classList.remove("active");}else{favorites.push(t);e.classList.add("active");}localStorage.setItem("favorites",JSON.stringify(favorites));}
+
+/* 再生UI */
+player.ontimeupdate=()=>{if(!player.duration)return;const p=(player.currentTime/player.duration)*100;progressBar.style.width=p+"%";currentTimeDisplay.textContent=format(player.currentTime);durationDisplay.textContent=format(player.duration);};
+progressContainer.onclick=e=>{const r=progressContainer.getBoundingClientRect();player.currentTime=((e.clientX-r.left)/r.width)*player.duration;};
+function format(s){const m=Math.floor(s/60),sec=Math.floor(s%60);return`${m}:${sec.toString().padStart(2,"0")}`;}
 document.getElementById("playBtn").onclick=()=>player.paused?player.play():player.pause();
-document.getElementById("prevBtn").onclick=()=>{current=(current-1+filteredTracks.length)%filteredTracks.length;loadTrack(current);player.play();};
-document.getElementById("nextBtn").onclick=()=>{current=(current+1)%filteredTracks.length;loadTrack(current);player.play();};
-player.onended=()=>{repeat==="one"?player.play():document.getElementById("nextBtn").click();};
+document.getElementById("prevBtn").onclick=prevTrack;
+document.getElementById("nextBtn").onclick=nextTrack;
+player.onended=()=>{repeat==="one"?player.play():nextTrack();};
 
-shuffleBtn.onclick=()=>{shuffle=!shuffle;localStorage.setItem("shuffle",shuffle);shuffleBtn.classList.toggle("active",shuffle);};
-repeatBtn.onclick=()=>{repeat=repeat==="off"?"one":repeat==="one"?"all":"off";localStorage.setItem("repeat",repeat);repeatBtn.textContent=repeat==="one"?"🔂 リピート: 1曲":repeat==="all"?"🔁 リピート: 全体":"🔁 リピート: オフ";};
-favModeBtn.onclick=()=>{favMode=!favMode;localStorage.setItem("favMode",favMode);applyFilters();favModeBtn.classList.toggle("active",favMode);};
+/* 音量・速度 */
+function setupAudioControls(){volumeSlider.value=volume;volumeValue.textContent=Math.round(volume*100);speedSlider.value=speed;speedValue.textContent=speed.toFixed(1);volumeSlider.oninput=()=>{volume=parseFloat(volumeSlider.value);player.volume=volume;volumeValue.textContent=Math.round(volume*100);localStorage.setItem("volume",volume);};speedSlider.oninput=()=>{speed=parseFloat(speedSlider.value);player.playbackRate=speed;speedValue.textContent=speed.toFixed(1);localStorage.setItem("speed",speed);};}
 
-search.oninput=applyFilters;
-filter.onchange=applyFilters;
+/* 波形 */
+function drawWave(){const c=document.getElementById("wave"),ctx=c.getContext("2d");let w,h;function r(){w=c.width=innerWidth;h=c.height=innerHeight;}window.onresize=r;r();const d=new Uint8Array(2048);function draw(){requestAnimationFrame(draw);if(!analyser)return;analyser.getByteTimeDomainData(d);ctx.clearRect(0,0,w,h);ctx.lineWidth=2;ctx.strokeStyle="rgba(130,120,255,0.2)";ctx.beginPath();for(let i=0;i<d.length;i++){const x=(i/d.length)*w;const y=h/2+(d[i]-128);if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);}ctx.stroke();}draw();}
 init();
 </script>
 </body>
