@@ -14,7 +14,7 @@
     overflow: hidden;
   }
 
-  /* 背景アニメーション（泡） */
+  /* 背景アニメーション */
   @keyframes float {
     0% { transform: translateY(0) rotate(0deg); opacity: 0.7; }
     50% { transform: translateY(-20px) rotate(10deg); opacity: 1; }
@@ -29,7 +29,6 @@
     z-index: 0;
   }
 
-  /* 波形アニメーション */
   canvas#wave {
     position: fixed;
     top: 0;
@@ -71,6 +70,33 @@
     font-size: 1.2em;
     margin-top: 10px;
     color: #444;
+  }
+
+  /* 再生バー */
+  #progressContainer {
+    width: 100%;
+    height: 10px;
+    background: #ddd;
+    border-radius: 5px;
+    margin: 10px 0;
+    cursor: pointer;
+    position: relative;
+  }
+
+  #progressBar {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, #a58ff7, #ff8cb0);
+    border-radius: 5px;
+    transition: width 0.2s linear;
+  }
+
+  #timeDisplay {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.9em;
+    color: #666;
+    margin-top: 4px;
   }
 
   #controls, #extraControls {
@@ -125,6 +151,13 @@
   }
 
   .track:hover { background: #f3f0ff; }
+
+  /* 再生中ハイライト */
+  .track.playing {
+    background: linear-gradient(90deg, #e8e2ff, #fff);
+    border-left: 5px solid #a58ff7;
+  }
+
   .favorite { color: #ccc; cursor: pointer; font-size: 1.2em; }
   .favorite.active { color: #ff6781; }
 
@@ -137,7 +170,6 @@
 </head>
 <body>
 
-<!-- 波形アニメーション背景 -->
 <canvas id="wave"></canvas>
 
 <!-- 背景の泡 -->
@@ -150,6 +182,14 @@
 <div id="player">
   <video id="videoPlayer" controls></video>
   <div id="info"></div>
+
+  <div id="progressContainer">
+    <div id="progressBar"></div>
+  </div>
+  <div id="timeDisplay">
+    <span id="currentTime">0:00</span>
+    <span id="duration">0:00</span>
+  </div>
 
   <div id="controls">
     <button id="prevBtn">⏮ 前へ</button>
@@ -190,6 +230,10 @@ const search = document.getElementById("searchBox");
 const shuffleBtn = document.getElementById("shuffleBtn");
 const repeatBtn = document.getElementById("repeatBtn");
 const favModeBtn = document.getElementById("favModeBtn");
+const progressContainer = document.getElementById("progressContainer");
+const progressBar = document.getElementById("progressBar");
+const currentTimeDisplay = document.getElementById("currentTime");
+const durationDisplay = document.getElementById("duration");
 
 async function init() {
   const res = await fetch("tracks.json");
@@ -216,7 +260,7 @@ function renderList(data) {
   list.innerHTML = "";
   data.forEach((t, i) => {
     const div = document.createElement("div");
-    div.className = "track";
+    div.className = "track" + (i === current ? " playing" : "");
     div.innerHTML = `
       <span>${t.title} ／ ${t.artist}</span>
       <span class="favorite ${favorites.includes(t.title) ? 'active' : ''}">❤</span>
@@ -240,6 +284,7 @@ function loadTrack(index) {
   if (!track) return;
   player.src = track.url;
   info.textContent = `${track.title} ／ ${track.artist}`;
+  highlightPlaying();
 }
 
 function toggleFavorite(title, el) {
@@ -272,13 +317,16 @@ function updateButtons() {
 }
 
 function nextTrack() {
-  if (shuffle) {
-    current = Math.floor(Math.random() * filteredTracks.length);
-  } else {
-    current = (current + 1) % filteredTracks.length;
-  }
+  if (shuffle) current = Math.floor(Math.random() * filteredTracks.length);
+  else current = (current + 1) % filteredTracks.length;
   loadTrack(current);
   player.play();
+}
+
+function highlightPlaying() {
+  document.querySelectorAll(".track").forEach((el, i) => {
+    el.classList.toggle("playing", i === current);
+  });
 }
 
 document.getElementById("playBtn").onclick = () => player.paused ? player.play() : player.pause();
@@ -290,7 +338,7 @@ document.getElementById("nextBtn").onclick = nextTrack;
 
 player.onended = () => {
   if (repeat === "one") player.play();
-  else nextTrack(); // ← 自動的に次の曲へ
+  else nextTrack();
 };
 
 search.oninput = applyFilters;
@@ -315,9 +363,28 @@ favModeBtn.onclick = () => {
   updateButtons();
 };
 
-init();
+/* ⏱ 再生バー制御 */
+player.ontimeupdate = () => {
+  if (!player.duration) return;
+  const percent = (player.currentTime / player.duration) * 100;
+  progressBar.style.width = percent + "%";
+  currentTimeDisplay.textContent = formatTime(player.currentTime);
+  durationDisplay.textContent = formatTime(player.duration);
+};
 
-/* 🌊 波形アニメーション描画 */
+progressContainer.onclick = (e) => {
+  const rect = progressContainer.getBoundingClientRect();
+  const pos = (e.clientX - rect.left) / rect.width;
+  player.currentTime = pos * player.duration;
+};
+
+function formatTime(sec) {
+  const m = Math.floor(sec / 60);
+  const s = Math.floor(sec % 60);
+  return `${m}:${s.toString().padStart(2,"0")}`;
+}
+
+/* 🌊 波形アニメーション */
 function drawWave() {
   const canvas = document.getElementById("wave");
   const ctx = canvas.getContext("2d");
@@ -334,7 +401,6 @@ function drawWave() {
     ctx.clearRect(0, 0, w, h);
     for (let i = 0; i < 3; i++) {
       ctx.beginPath();
-      ctx.moveTo(0, h/2);
       for (let x = 0; x < w; x++) {
         const y = h/2 + Math.sin(x * 0.01 + t + i) * 20 * (i+1);
         ctx.lineTo(x, y);
@@ -347,6 +413,8 @@ function drawWave() {
   }
   draw();
 }
+
+init();
 </script>
 </body>
 </html>
