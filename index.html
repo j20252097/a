@@ -11,10 +11,10 @@
     padding: 0;
     background: linear-gradient(135deg, #fcecff, #eafff8, #e0e8ff);
     min-height: 100vh;
-    overflow-x: hidden;
+    overflow: hidden;
   }
 
-  /* 背景アニメーション */
+  /* 背景アニメーション（泡） */
   @keyframes float {
     0% { transform: translateY(0) rotate(0deg); opacity: 0.7; }
     50% { transform: translateY(-20px) rotate(10deg); opacity: 1; }
@@ -23,10 +23,21 @@
 
   .bubble {
     position: absolute;
-    background: rgba(255, 255, 255, 0.6);
+    background: rgba(255, 255, 255, 0.5);
     border-radius: 50%;
     animation: float 6s ease-in-out infinite;
     z-index: 0;
+  }
+
+  /* 波形アニメーション */
+  canvas#wave {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 0;
+    opacity: 0.5;
   }
 
   h1 {
@@ -34,10 +45,12 @@
     font-size: 2em;
     color: #6a5acd;
     padding-top: 30px;
+    z-index: 2;
+    position: relative;
   }
 
   #player {
-    background: rgba(255,255,255,0.85);
+    background: rgba(255,255,255,0.9);
     border-radius: 16px;
     box-shadow: 0 4px 20px rgba(0,0,0,0.1);
     max-width: 700px;
@@ -45,7 +58,7 @@
     padding: 20px;
     text-align: center;
     position: relative;
-    z-index: 1;
+    z-index: 2;
   }
 
   video {
@@ -60,11 +73,12 @@
     color: #444;
   }
 
-  #controls {
+  #controls, #extraControls {
     margin-top: 15px;
     display: flex;
     justify-content: center;
     gap: 10px;
+    flex-wrap: wrap;
   }
 
   button {
@@ -77,9 +91,8 @@
     cursor: pointer;
     transition: 0.2s;
   }
-  button:hover {
-    background: #8c73e6;
-  }
+  button:hover { background: #8c73e6; }
+  button.active { background: #ff8cb0; }
 
   select, input[type="text"] {
     margin-top: 15px;
@@ -111,162 +124,229 @@
     align-items: center;
   }
 
-  .track:hover {
-    background: #f3f0ff;
-  }
-
-  .favorite {
-    color: #ccc;
-    cursor: pointer;
-    font-size: 1.2em;
-  }
-
-  .favorite.active {
-    color: #ff6781;
-  }
+  .track:hover { background: #f3f0ff; }
+  .favorite { color: #ccc; cursor: pointer; font-size: 1.2em; }
+  .favorite.active { color: #ff6781; }
 
   footer {
     text-align: center;
     margin: 30px 0;
     color: #666;
   }
-
 </style>
 </head>
 <body>
 
-  <!-- 背景にふわふわする泡 -->
-  <div class="bubble" style="width:80px;height:80px;top:10%;left:10%;animation-duration:8s;"></div>
-  <div class="bubble" style="width:120px;height:120px;top:30%;left:80%;animation-duration:10s;"></div>
-  <div class="bubble" style="width:60px;height:60px;top:70%;left:30%;animation-duration:7s;"></div>
+<!-- 波形アニメーション背景 -->
+<canvas id="wave"></canvas>
 
-  <h1>🌷 ミュージックプレイヤー 🌷</h1>
+<!-- 背景の泡 -->
+<div class="bubble" style="width:80px;height:80px;top:10%;left:10%;animation-duration:8s;"></div>
+<div class="bubble" style="width:120px;height:120px;top:30%;left:80%;animation-duration:10s;"></div>
+<div class="bubble" style="width:60px;height:60px;top:70%;left:30%;animation-duration:7s;"></div>
 
-  <div id="player">
-    <video id="videoPlayer" controls></video>
-    <div id="info"></div>
+<h1>ミュージックプレイヤー 🎧</h1>
 
-    <div id="controls">
-      <button id="prevBtn">⏮ 前へ</button>
-      <button id="playBtn">▶️ / ⏸</button>
-      <button id="nextBtn">⏭ 次へ</button>
-    </div>
+<div id="player">
+  <video id="videoPlayer" controls></video>
+  <div id="info"></div>
 
-    <input type="text" id="searchBox" placeholder="🔍 曲名やアーティストで検索..." />
-
-    <select id="artistFilter">
-      <option value="">すべてのアーティスト</option>
-    </select>
-
-    <div id="trackList"></div>
+  <div id="controls">
+    <button id="prevBtn">⏮ 前へ</button>
+    <button id="playBtn">▶️ / ⏸</button>
+    <button id="nextBtn">⏭ 次へ</button>
   </div>
 
-  <footer>© 2025 MusicProject 🎶</footer>
+  <div id="extraControls">
+    <button id="shuffleBtn">🔀 シャッフル</button>
+    <button id="repeatBtn">🔁 リピート: オフ</button>
+    <button id="favModeBtn">❤️ お気に入りのみ</button>
+  </div>
 
-  <script>
-    let tracks = [];
-    let filteredTracks = [];
-    let current = 0;
-    let favorites = JSON.parse(localStorage.getItem("favorites") || "[]");
+  <input type="text" id="searchBox" placeholder="🔍 曲名やアーティストで検索..." />
+  <select id="artistFilter">
+    <option value="">すべてのアーティスト</option>
+  </select>
 
-    const player = document.getElementById("videoPlayer");
-    const info = document.getElementById("info");
-    const list = document.getElementById("trackList");
-    const filter = document.getElementById("artistFilter");
-    const search = document.getElementById("searchBox");
+  <div id="trackList"></div>
+</div>
 
-    async function init() {
-      const res = await fetch("tracks.json");
-      tracks = await res.json();
-      populateArtistFilter();
-      renderList(tracks);
-      loadTrack(0);
-    }
+<footer>© 2025 MusicProject 🎶</footer>
 
-    function populateArtistFilter() {
-      const artists = [...new Set(tracks.map(t => t.artist))];
-      artists.forEach(a => {
-        const opt = document.createElement("option");
-        opt.value = a;
-        opt.textContent = a;
-        filter.appendChild(opt);
-      });
-    }
+<script>
+let tracks = [];
+let filteredTracks = [];
+let current = 0;
+let favorites = JSON.parse(localStorage.getItem("favorites") || "[]");
+let shuffle = JSON.parse(localStorage.getItem("shuffle") || "false");
+let repeat = localStorage.getItem("repeat") || "off"; // off, one, all
+let favMode = JSON.parse(localStorage.getItem("favMode") || "false");
 
-    function renderList(data) {
-      filteredTracks = data;
-      list.innerHTML = "";
-      data.forEach((t, i) => {
-        const div = document.createElement("div");
-        div.className = "track";
-        div.innerHTML = `
-          <span>${t.title} ／ ${t.artist}</span>
-          <span class="favorite ${favorites.includes(t.title) ? 'active' : ''}">❤</span>
-        `;
-        div.onclick = (e) => {
-          if (e.target.classList.contains("favorite")) {
-            toggleFavorite(t.title, e.target);
-            e.stopPropagation();
-          } else {
-            current = i;
-            loadTrack(current);
-            player.play();
-          }
-        };
-        list.appendChild(div);
-      });
-    }
+const player = document.getElementById("videoPlayer");
+const info = document.getElementById("info");
+const list = document.getElementById("trackList");
+const filter = document.getElementById("artistFilter");
+const search = document.getElementById("searchBox");
+const shuffleBtn = document.getElementById("shuffleBtn");
+const repeatBtn = document.getElementById("repeatBtn");
+const favModeBtn = document.getElementById("favModeBtn");
 
-    function loadTrack(index) {
-      const track = filteredTracks[index] || filteredTracks[0];
-      if (!track) return;
-      player.src = track.url;
-      info.textContent = `${track.title} ／ ${track.artist}`;
-    }
+async function init() {
+  const res = await fetch("tracks.json");
+  tracks = await res.json();
+  populateArtistFilter();
+  applyFilters();
+  loadTrack(0);
+  updateButtons();
+  drawWave();
+}
 
-    function toggleFavorite(title, el) {
-      if (favorites.includes(title)) {
-        favorites = favorites.filter(f => f !== title);
-        el.classList.remove("active");
+function populateArtistFilter() {
+  const artists = [...new Set(tracks.map(t => t.artist))];
+  artists.forEach(a => {
+    const opt = document.createElement("option");
+    opt.value = a;
+    opt.textContent = a;
+    filter.appendChild(opt);
+  });
+}
+
+function renderList(data) {
+  filteredTracks = data;
+  list.innerHTML = "";
+  data.forEach((t, i) => {
+    const div = document.createElement("div");
+    div.className = "track";
+    div.innerHTML = `
+      <span>${t.title} ／ ${t.artist}</span>
+      <span class="favorite ${favorites.includes(t.title) ? 'active' : ''}">❤</span>
+    `;
+    div.onclick = (e) => {
+      if (e.target.classList.contains("favorite")) {
+        toggleFavorite(t.title, e.target);
+        e.stopPropagation();
       } else {
-        favorites.push(title);
-        el.classList.add("active");
+        current = i;
+        loadTrack(current);
+        player.play();
       }
-      localStorage.setItem("favorites", JSON.stringify(favorites));
+    };
+    list.appendChild(div);
+  });
+}
+
+function loadTrack(index) {
+  const track = filteredTracks[index] || filteredTracks[0];
+  if (!track) return;
+  player.src = track.url;
+  info.textContent = `${track.title} ／ ${track.artist}`;
+}
+
+function toggleFavorite(title, el) {
+  if (favorites.includes(title)) {
+    favorites = favorites.filter(f => f !== title);
+    el.classList.remove("active");
+  } else {
+    favorites.push(title);
+    el.classList.add("active");
+  }
+  localStorage.setItem("favorites", JSON.stringify(favorites));
+}
+
+function applyFilters() {
+  const keyword = search.value.toLowerCase();
+  const artist = filter.value;
+  let result = tracks.filter(t =>
+    (!artist || t.artist === artist) &&
+    (t.title.toLowerCase().includes(keyword) || t.artist.toLowerCase().includes(keyword))
+  );
+  if (favMode) result = result.filter(t => favorites.includes(t.title));
+  renderList(result);
+}
+
+function updateButtons() {
+  shuffleBtn.classList.toggle("active", shuffle);
+  favModeBtn.classList.toggle("active", favMode);
+  repeatBtn.textContent = repeat === "one" ? "🔂 リピート: 1曲" :
+                          repeat === "all" ? "🔁 リピート: 全体" : "🔁 リピート: オフ";
+}
+
+function nextTrack() {
+  if (shuffle) {
+    current = Math.floor(Math.random() * filteredTracks.length);
+  } else {
+    current = (current + 1) % filteredTracks.length;
+  }
+  loadTrack(current);
+  player.play();
+}
+
+document.getElementById("playBtn").onclick = () => player.paused ? player.play() : player.pause();
+document.getElementById("prevBtn").onclick = () => {
+  current = (current - 1 + filteredTracks.length) % filteredTracks.length;
+  loadTrack(current); player.play();
+};
+document.getElementById("nextBtn").onclick = nextTrack;
+
+player.onended = () => {
+  if (repeat === "one") player.play();
+  else nextTrack(); // ← 自動的に次の曲へ
+};
+
+search.oninput = applyFilters;
+filter.onchange = applyFilters;
+
+shuffleBtn.onclick = () => {
+  shuffle = !shuffle;
+  localStorage.setItem("shuffle", shuffle);
+  updateButtons();
+};
+
+repeatBtn.onclick = () => {
+  repeat = repeat === "off" ? "one" : repeat === "one" ? "all" : "off";
+  localStorage.setItem("repeat", repeat);
+  updateButtons();
+};
+
+favModeBtn.onclick = () => {
+  favMode = !favMode;
+  localStorage.setItem("favMode", favMode);
+  applyFilters();
+  updateButtons();
+};
+
+init();
+
+/* 🌊 波形アニメーション描画 */
+function drawWave() {
+  const canvas = document.getElementById("wave");
+  const ctx = canvas.getContext("2d");
+  let w, h, t = 0;
+  function resize() {
+    w = canvas.width = window.innerWidth;
+    h = canvas.height = window.innerHeight;
+  }
+  window.onresize = resize;
+  resize();
+
+  function draw() {
+    t += 0.02;
+    ctx.clearRect(0, 0, w, h);
+    for (let i = 0; i < 3; i++) {
+      ctx.beginPath();
+      ctx.moveTo(0, h/2);
+      for (let x = 0; x < w; x++) {
+        const y = h/2 + Math.sin(x * 0.01 + t + i) * 20 * (i+1);
+        ctx.lineTo(x, y);
+      }
+      ctx.strokeStyle = `rgba(120,120,255,${0.15 + i*0.1})`;
+      ctx.lineWidth = 2;
+      ctx.stroke();
     }
-
-    // 再生制御
-    document.getElementById("playBtn").onclick = () => player.paused ? player.play() : player.pause();
-    document.getElementById("prevBtn").onclick = () => {
-      current = (current - 1 + filteredTracks.length) % filteredTracks.length;
-      loadTrack(current); player.play();
-    };
-    document.getElementById("nextBtn").onclick = () => {
-      current = (current + 1) % filteredTracks.length;
-      loadTrack(current); player.play();
-    };
-
-    player.onended = () => {
-      current = (current + 1) % filteredTracks.length;
-      loadTrack(current);
-      player.play();
-    };
-
-    // 検索機能
-    search.oninput = () => applyFilters();
-    filter.onchange = () => applyFilters();
-
-    function applyFilters() {
-      const keyword = search.value.toLowerCase();
-      const artist = filter.value;
-      const result = tracks.filter(t => 
-        (!artist || t.artist === artist) &&
-        (t.title.toLowerCase().includes(keyword) || t.artist.toLowerCase().includes(keyword))
-      );
-      renderList(result);
-    }
-
-    init();
-  </script>
+    requestAnimationFrame(draw);
+  }
+  draw();
+}
+</script>
 </body>
 </html>
