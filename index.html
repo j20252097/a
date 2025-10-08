@@ -30,37 +30,98 @@ canvas#wave {
   z-index: 0; opacity: 0.4;
   pointer-events: none;
 }
-h1 { text-align: center; font-size: 2em; color: #6a5acd; padding-top: 30px; z-index: 2; position: relative; }
+h1 {
+  text-align: center;
+  font-size: 2em;
+  color: #6a5acd;
+  padding-top: 30px;
+  z-index: 2;
+  position: relative;
+}
 #player {
   background: rgba(255,255,255,0.9);
   border-radius: 16px;
   box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-  max-width: 700px; margin: 20px auto 60px; padding: 20px;
-  text-align: center; position: relative; z-index: 2;
+  max-width: 700px;
+  margin: 20px auto 60px;
+  padding: 20px;
+  text-align: center;
+  position: relative;
+  z-index: 2;
 }
-video { width: 100%; border-radius: 12px; background: #000; }
+video {
+  width: 100%;
+  border-radius: 12px;
+  background: #000;
+}
 #info { font-size: 1.2em; margin-top: 10px; color: #444; }
-#progressContainer { width: 100%; height: 10px; background: #ddd; border-radius: 5px; margin: 10px 0; cursor: pointer; }
-#progressBar { height: 100%; width: 0%; background: linear-gradient(90deg,#a58ff7,#ff8cb0); border-radius: 5px; }
-#timeDisplay { display: flex; justify-content: space-between; font-size: 0.9em; color: #666; }
+#progressContainer {
+  width: 100%; height: 10px;
+  background: #ddd;
+  border-radius: 5px;
+  margin: 10px 0;
+  cursor: pointer;
+}
+#progressBar {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg,#a58ff7,#ff8cb0);
+  border-radius: 5px;
+}
+#timeDisplay {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.9em;
+  color: #666;
+}
 button {
-  background: #a58ff7; color: #fff; border: none; border-radius: 8px;
-  padding: 10px 16px; font-size: 1em; cursor: pointer; transition: 0.2s;
+  background: #a58ff7;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 16px;
+  font-size: 1em;
+  cursor: pointer;
+  transition: 0.2s;
 }
-button:hover { background: #8c73e6; } button.active { background: #ff8cb0; }
-#controls,#extraControls,#settings,#eqPanel {
-  display: flex; justify-content: center; flex-wrap: wrap; gap: 10px; margin-top: 15px;
+button:hover { background: #8c73e6; }
+button.active { background: #ff8cb0; }
+#controls, #extraControls, #settings, #eqPanel {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 15px;
 }
-.sliderContainer { width: 90%; max-width: 400px; text-align: left; }
-.sliderContainer label { font-size: 0.9em; color: #555; }
-input[type="range"] { width: 100%; accent-color: #a58ff7; }
+.sliderContainer {
+  width: 90%;
+  max-width: 400px;
+  text-align: left;
+}
+.sliderContainer label {
+  font-size: 0.9em;
+  color: #555;
+}
+input[type="range"] {
+  width: 100%;
+  accent-color: #a58ff7;
+}
 #trackList {
-  margin-top: 20px; max-height: 250px; overflow-y: auto; text-align: left;
+  margin-top: 20px;
+  max-height: 250px;
+  overflow-y: auto;
+  text-align: left;
 }
 .track {
-  background: #fff; border-radius: 10px; padding: 10px; margin: 6px 0;
+  background: #fff;
+  border-radius: 10px;
+  padding: 10px;
+  margin: 6px 0;
   box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-  display: flex; justify-content: space-between; align-items: center; cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
 }
 .track.playing {
   background: linear-gradient(90deg,#e8e2ff,#fff);
@@ -182,19 +243,48 @@ function setupEQ(){
   player.addEventListener("play",()=>audioCtx.resume());
 }
 
-/* 再生管理 */
-function loadTrack(i){
-  const track=filteredTracks[i]||filteredTracks[0];
-  if(!track)return;
-  player.src=track.url; player.volume=volume; player.playbackRate=speed;
-  info.textContent=`${track.title} ／ ${track.artist}`;
-  updateMediaSession(track); autoCaptureArtwork(track); highlight();
+/* 🎶 再生制御 */
+function nextTrack() {
+  if (shuffle) {
+    let next;
+    do { next = Math.floor(Math.random() * filteredTracks.length); }
+    while (next === current && filteredTracks.length > 1);
+    current = next;
+  } else {
+    current++;
+    if (current >= filteredTracks.length) {
+      if (repeat === "all") current = 0;
+      else { player.pause(); return; }
+    }
+  }
+  loadTrack(current);
+  player.play();
 }
-function nextTrack(){current=(current+1)%filteredTracks.length;loadTrack(current);player.play();}
-function prevTrack(){current=(current-1+filteredTracks.length)%filteredTracks.length;loadTrack(current);player.play();}
-function highlight(){document.querySelectorAll(".track").forEach((el,i)=>el.classList.toggle("playing",i===current));}
 
-/* UI系 */
+function prevTrack() {
+  if (shuffle) {
+    let prev;
+    do { prev = Math.floor(Math.random() * filteredTracks.length); }
+    while (prev === current && filteredTracks.length > 1);
+    current = prev;
+  } else {
+    current--;
+    if (current < 0) current = filteredTracks.length - 1;
+  }
+  loadTrack(current);
+  player.play();
+}
+
+player.onended = () => {
+  if (repeat === "one") {
+    player.currentTime = 0;
+    player.play();
+  } else {
+    nextTrack();
+  }
+};
+
+/* UI・リストなど */
 function updateButtons(){
   document.getElementById("shuffleBtn").classList.toggle("active",shuffle);
   document.getElementById("favModeBtn").classList.toggle("active",favMode);
@@ -204,20 +294,17 @@ document.getElementById("shuffleBtn").onclick=()=>{shuffle=!shuffle;localStorage
 document.getElementById("repeatBtn").onclick=()=>{repeat=repeat==="off"?"one":repeat==="one"?"all":"off";localStorage.setItem("repeat",repeat);updateButtons();};
 document.getElementById("favModeBtn").onclick=()=>{favMode=!favMode;localStorage.setItem("favMode",favMode);applyFilters();updateButtons();};
 
-/* 検索・リスト */
 function populateArtists(){const artists=[...new Set(tracks.map(t=>t.artist))];artists.forEach(a=>{const o=document.createElement("option");o.value=a;o.textContent=a;artistFilter.appendChild(o);});}
 function applyFilters(){const k=searchBox.value.toLowerCase(),a=artistFilter.value;let r=tracks.filter(t=>(!a||t.artist===a)&&(t.title.toLowerCase().includes(k)||t.artist.toLowerCase().includes(k)));if(favMode)r=r.filter(t=>favorites.includes(t.title));renderList(r);}
 function renderList(d){filteredTracks=d;list.innerHTML="";d.forEach((t,i)=>{const div=document.createElement("div");div.className="track"+(i===current?" playing":"");div.innerHTML=`<span>${t.title} ／ ${t.artist}</span><span class="favorite ${favorites.includes(t.title)?'active':''}">❤</span>`;div.onclick=e=>{if(e.target.classList.contains("favorite")){toggleFav(t.title,e.target);return;}current=i;loadTrack(current);player.play();};list.appendChild(div);});}
 function toggleFav(t,e){if(favorites.includes(t)){favorites=favorites.filter(f=>f!==t);e.classList.remove("active");}else{favorites.push(t);e.classList.add("active");}localStorage.setItem("favorites",JSON.stringify(favorites));}
 
-/* 再生UI */
 player.ontimeupdate=()=>{if(!player.duration)return;const p=(player.currentTime/player.duration)*100;progressBar.style.width=p+"%";currentTimeDisplay.textContent=format(player.currentTime);durationDisplay.textContent=format(player.duration);};
 progressContainer.onclick=e=>{const r=progressContainer.getBoundingClientRect();player.currentTime=((e.clientX-r.left)/r.width)*player.duration;};
 function format(s){const m=Math.floor(s/60),sec=Math.floor(s%60);return`${m}:${sec.toString().padStart(2,"0")}`;}
 document.getElementById("playBtn").onclick=()=>player.paused?player.play():player.pause();
 document.getElementById("prevBtn").onclick=prevTrack;
 document.getElementById("nextBtn").onclick=nextTrack;
-player.onended=()=>{repeat==="one"?player.play():nextTrack();};
 
 /* 音量・速度 */
 function setupAudioControls(){volumeSlider.value=volume;volumeValue.textContent=Math.round(volume*100);speedSlider.value=speed;speedValue.textContent=speed.toFixed(1);volumeSlider.oninput=()=>{volume=parseFloat(volumeSlider.value);player.volume=volume;volumeValue.textContent=Math.round(volume*100);localStorage.setItem("volume",volume);};speedSlider.oninput=()=>{speed=parseFloat(speedSlider.value);player.playbackRate=speed;speedValue.textContent=speed.toFixed(1);localStorage.setItem("speed",speed);};}
