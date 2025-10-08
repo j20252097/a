@@ -3,7 +3,7 @@
   "short_name": "MusicPlayer",
   "start_url": "./index.html",
   "display": "standalone",
-  "background_color": "#f5f5ff",
+  "background_color": "#eae7ff",
   "theme_color": "#a58ff7",
   "icons": [
     {
