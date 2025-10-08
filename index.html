@@ -11,7 +11,9 @@
     padding: 0;
     background: linear-gradient(135deg, #fcecff, #eafff8, #e0e8ff);
     min-height: 100vh;
-    overflow: hidden;
+    /* ✅ スクロール禁止を解除 */
+    overflow-x: hidden;
+    overflow-y: auto;
   }
 
   /* 背景アニメーション */
@@ -37,6 +39,7 @@
     height: 100vh;
     z-index: 0;
     opacity: 0.5;
+    pointer-events: none;
   }
 
   h1 {
@@ -53,7 +56,7 @@
     border-radius: 16px;
     box-shadow: 0 4px 20px rgba(0,0,0,0.1);
     max-width: 700px;
-    margin: 20px auto;
+    margin: 20px auto 60px auto;
     padding: 20px;
     text-align: center;
     position: relative;
@@ -107,6 +110,31 @@
     flex-wrap: wrap;
   }
 
+  #settings {
+    margin-top: 15px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .sliderContainer {
+    width: 90%;
+    max-width: 400px;
+    text-align: left;
+  }
+
+  .sliderContainer label {
+    font-size: 0.9em;
+    color: #555;
+  }
+
+  input[type="range"] {
+    width: 100%;
+    accent-color: #a58ff7;
+    cursor: pointer;
+  }
+
   button {
     background: #a58ff7;
     color: white;
@@ -152,7 +180,6 @@
 
   .track:hover { background: #f3f0ff; }
 
-  /* 再生中ハイライト */
   .track.playing {
     background: linear-gradient(90deg, #e8e2ff, #fff);
     border-left: 5px solid #a58ff7;
@@ -203,6 +230,18 @@
     <button id="favModeBtn">❤️ お気に入りのみ</button>
   </div>
 
+  <!-- 🔊 音量・速度設定 -->
+  <div id="settings">
+    <div class="sliderContainer">
+      <label>🔊 音量: <span id="volumeValue"></span></label>
+      <input type="range" id="volumeSlider" min="0" max="1" step="0.01">
+    </div>
+    <div class="sliderContainer">
+      <label>⚡ 再生速度: <span id="speedValue"></span>x</label>
+      <input type="range" id="speedSlider" min="0.5" max="2" step="0.1">
+    </div>
+  </div>
+
   <input type="text" id="searchBox" placeholder="🔍 曲名やアーティストで検索..." />
   <select id="artistFilter">
     <option value="">すべてのアーティスト</option>
@@ -219,8 +258,10 @@ let filteredTracks = [];
 let current = 0;
 let favorites = JSON.parse(localStorage.getItem("favorites") || "[]");
 let shuffle = JSON.parse(localStorage.getItem("shuffle") || "false");
-let repeat = localStorage.getItem("repeat") || "off"; // off, one, all
+let repeat = localStorage.getItem("repeat") || "off";
 let favMode = JSON.parse(localStorage.getItem("favMode") || "false");
+let volume = parseFloat(localStorage.getItem("volume") || "0.8");
+let speed = parseFloat(localStorage.getItem("speed") || "1.0");
 
 const player = document.getElementById("videoPlayer");
 const info = document.getElementById("info");
@@ -234,6 +275,10 @@ const progressContainer = document.getElementById("progressContainer");
 const progressBar = document.getElementById("progressBar");
 const currentTimeDisplay = document.getElementById("currentTime");
 const durationDisplay = document.getElementById("duration");
+const volumeSlider = document.getElementById("volumeSlider");
+const volumeValue = document.getElementById("volumeValue");
+const speedSlider = document.getElementById("speedSlider");
+const speedValue = document.getElementById("speedValue");
 
 async function init() {
   const res = await fetch("tracks.json");
@@ -243,6 +288,7 @@ async function init() {
   loadTrack(0);
   updateButtons();
   drawWave();
+  setupAudioControls();
 }
 
 function populateArtistFilter() {
@@ -283,6 +329,8 @@ function loadTrack(index) {
   const track = filteredTracks[index] || filteredTracks[0];
   if (!track) return;
   player.src = track.url;
+  player.volume = volume;
+  player.playbackRate = speed;
   info.textContent = `${track.title} ／ ${track.artist}`;
   highlightPlaying();
 }
@@ -363,7 +411,7 @@ favModeBtn.onclick = () => {
   updateButtons();
 };
 
-/* ⏱ 再生バー制御 */
+/* 再生バー制御 */
 player.ontimeupdate = () => {
   if (!player.duration) return;
   const percent = (player.currentTime / player.duration) * 100;
@@ -382,6 +430,28 @@ function formatTime(sec) {
   const m = Math.floor(sec / 60);
   const s = Math.floor(sec % 60);
   return `${m}:${s.toString().padStart(2,"0")}`;
+}
+
+/* 音量・速度設定 */
+function setupAudioControls() {
+  volumeSlider.value = volume;
+  volumeValue.textContent = Math.round(volume * 100);
+  speedSlider.value = speed;
+  speedValue.textContent = speed.toFixed(1);
+
+  volumeSlider.oninput = () => {
+    volume = parseFloat(volumeSlider.value);
+    player.volume = volume;
+    volumeValue.textContent = Math.round(volume * 100);
+    localStorage.setItem("volume", volume);
+  };
+
+  speedSlider.oninput = () => {
+    speed = parseFloat(speedSlider.value);
+    player.playbackRate = speed;
+    speedValue.textContent = speed.toFixed(1);
+    localStorage.setItem("speed", speed);
+  };
 }
 
 /* 🌊 波形アニメーション */
