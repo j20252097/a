@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>やわらかミュージックプレイヤー 🎶</title>
+  <style>
+    body {
+      font-family: "Hiragino Sans", "Noto Sans JP", sans-serif;
+      background: linear-gradient(135deg, #f7f0ff, #f0fff6);
+      color: #333;
+      text-align: center;
+      padding: 40px 10px;
+    }
+
+    h1 {
+      font-size: 2em;
+      margin-bottom: 0.5em;
+      color: #6a5acd;
+    }
+
+    p {
+      margin-bottom: 2em;
+      color: #666;
+    }
+
+    #player {
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+      padding: 20px;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    video {
+      width: 100%;
+      border-radius: 12px;
+      outline: none;
+      background: #000;
+    }
+
+    #info {
+      margin-top: 1em;
+      font-size: 1.1em;
+      color: #444;
+    }
+
+    #controls {
+      margin-top: 1.5em;
+      display: flex;
+      justify-content: center;
+      gap: 1em;
+    }
+
+    button {
+      background: #a58ff7;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 10px 20px;
+      font-size: 1em;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    button:hover {
+      background: #7d66d9;
+    }
+
+    select {
+      margin-top: 20px;
+      padding: 8px 12px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      font-size: 1em;
+    }
+
+    footer {
+      margin-top: 40px;
+      font-size: 0.85em;
+      color: #888;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>🎵 やわらかミュージックプレイヤー</h1>
+  <p>好きな曲を選んで、リラックスしてね。</p>
+
+  <div id="player">
+    <video id="videoPlayer" controls></video>
+    <div id="info"></div>
+
+    <div id="controls">
+      <button id="prevBtn">⏮ 前の曲</button>
+      <button id="playBtn">▶️ / ⏸</button>
+      <button id="nextBtn">⏭ 次の曲</button>
+    </div>
+
+    <select id="trackSelect"></select>
+  </div>
+
+  <footer>© 2025 やわらかMusicProject</footer>
+
+  <script>
+    let tracks = [];
+    let current = 0;
+    const player = document.getElementById("videoPlayer");
+    const info = document.getElementById("info");
+    const select = document.getElementById("trackSelect");
+
+    async function loadTracks() {
+      const res = await fetch("tracks.json");
+      tracks = await res.json();
+      populateSelect();
+      loadTrack(0);
+    }
+
+    function populateSelect() {
+      select.innerHTML = tracks.map((t, i) =>
+        `<option value="${i}">${t.title} - ${t.artist}</option>`
+      ).join("");
+    }
+
+    function loadTrack(index) {
+      current = index;
+      const track = tracks[current];
+      player.src = track.url;
+      info.textContent = `${track.title} ／ ${track.artist}`;
+      select.value = current;
+    }
+
+    document.getElementById("playBtn").onclick = () => {
+      if (player.paused) player.play();
+      else player.pause();
+    };
+
+    document.getElementById("prevBtn").onclick = () => {
+      current = (current - 1 + tracks.length) % tracks.length;
+      loadTrack(current);
+      player.play();
+    };
+
+    document.getElementById("nextBtn").onclick = () => {
+      current = (current + 1) % tracks.length;
+      loadTrack(current);
+      player.play();
+    };
+
+    select.onchange = () => {
+      loadTrack(parseInt(select.value));
+      player.play();
+    };
+
+    player.onended = () => {
+      current = (current + 1) % tracks.length;
+      loadTrack(current);
+      player.play();
+    };
+
+    loadTracks();
+  </script>
+</body>
+</html>
