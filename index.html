@@ -57,7 +57,8 @@ button {
   background: #a58ff7; color: #fff; border: none; border-radius: 8px;
   padding: 10px 16px; font-size: 1em; cursor: pointer; transition: 0.2s;
 }
-button:hover { background: #8c73e6; } button.active { background: #ff8cb0; }
+button:hover { background: #8c73e6; } 
+button.active { background: #ff8cb0; }
 #controls,#extraControls,#settings {
   display: flex; justify-content: center; flex-wrap: wrap; gap: 10px; margin-top: 15px;
 }
@@ -119,163 +120,166 @@ footer { text-align: center; margin: 30px 0; color: #666; }
 <footer>© 2025 MusicProject 🎶</footer>
 
 <script>
-let tracks=[],filteredTracks=[],current=0,favorites=JSON.parse(localStorage.getItem("favorites")||"[]");
-let shuffle=JSON.parse(localStorage.getItem("shuffle")||"false"),repeat=localStorage.getItem("repeat")||"off";
+let tracks=[],filteredTracks=[],current=0;
+let favorites=JSON.parse(localStorage.getItem("favorites")||"[]");
+let shuffle=JSON.parse(localStorage.getItem("shuffle")||"false");
+let repeat=localStorage.getItem("repeat")||"off";
 let favMode=JSON.parse(localStorage.getItem("favMode")||"false");
-let volume=parseFloat(localStorage.getItem("volume")||"0.8"),speed=parseFloat(localStorage.getItem("speed")||"1.0");
-const player=document.getElementById("videoPlayer"),info=document.getElementById("info"),list=document.getElementById("trackList");
-const searchBox=document.getElementById("searchBox"),filter=document.getElementById("artistFilter");
-const progressBar=document.getElementById("progressBar"),progressContainer=document.getElementById("progressContainer");
-const currentTimeDisplay=document.getElementById("currentTime"),durationDisplay=document.getElementById("duration");
-const volumeSlider=document.getElementById("volumeSlider"),speedSlider=document.getElementById("speedSlider");
-const volumeValue=document.getElementById("volumeValue"),speedValue=document.getElementById("speedValue");
-let audioCtx,analyser;
+let volume=parseFloat(localStorage.getItem("volume")||"0.8");
+let speed=parseFloat(localStorage.getItem("speed")||"1.0");
 
-/* 初期化 */
+const player=document.getElementById("videoPlayer");
+const info=document.getElementById("info");
+const list=document.getElementById("trackList");
+const searchBox=document.getElementById("searchBox");
+const filter=document.getElementById("artistFilter");
+const progressBar=document.getElementById("progressBar");
+const progressContainer=document.getElementById("progressContainer");
+const currentTimeDisplay=document.getElementById("currentTime");
+const durationDisplay=document.getElementById("duration");
+const volumeSlider=document.getElementById("volumeSlider");
+const speedSlider=document.getElementById("speedSlider");
+const volumeValue=document.getElementById("volumeValue");
+const speedValue=document.getElementById("speedValue");
+let analyser,audioCtx;
+
+/* 🎵 初期化 */
 async function init(){
   try {
     const res=await fetch("tracks.json");
     tracks=await res.json();
-    populateArtists();
-    applyFilters();
-    loadTrack(0);
-    setupAudio();
-    setupAudioControls();
-    drawWave();
-    updateButtons();
-  } catch(err){ console.error("tracks.json 読み込み失敗:",err); }
+    populateArtists(); applyFilters(); loadTrack(0);
+    setupAudioControls(); drawWave(); updateButtons();
+  } catch(e){ console.error("tracks.jsonの読み込み失敗:",e); }
 }
 
-/* MediaSession */
-function updateMediaSession(track){
-  if(!('mediaSession' in navigator)) return;
-  navigator.mediaSession.metadata=new MediaMetadata({
-    title:track.title, artist:track.artist,
-    artwork:[{src:"https://raw.githubusercontent.com/j20252097/a/refs/heads/main/Guild.png",sizes:"512x512",type:"image/png"}]
-  });
-}
-
-/* 音声波形 */
-function setupAudio(){
-  audioCtx=new AudioContext();
-  analyser=audioCtx.createAnalyser();
-  const source=audioCtx.createMediaElementSource(player);
-  source.connect(analyser);
-  analyser.connect(audioCtx.destination);
-  player.addEventListener("play",()=>audioCtx.resume());
-}
-
-/* 再生制御 */
+/* 🎶 再生関連 */
 function loadTrack(i){
-  if(!filteredTracks.length) return;
+  if(!filteredTracks.length)return;
   const track=filteredTracks[i]||filteredTracks[0];
-  if(!track.url){ console.warn("URLが存在しません:",track); return; }
+  if(!track.url)return;
   current=i;
   player.src=track.url;
   player.volume=volume;
   player.playbackRate=speed;
   info.textContent=`${track.title} ／ ${track.artist}`;
-  updateMediaSession(track);
   highlight();
 }
 function nextTrack(){
   if(shuffle){
-    let n; do{n=Math.floor(Math.random()*filteredTracks.length);}while(n===current&&filteredTracks.length>1);
+    let n;do{n=Math.floor(Math.random()*filteredTracks.length);}while(n===current&&filteredTracks.length>1);
     current=n;
   }else{
     current++;
-    if(current>=filteredTracks.length){ if(repeat==="all") current=0; else {player.pause();return;} }
+    if(current>=filteredTracks.length){
+      if(repeat==="all")current=0;else{player.pause();return;}
+    }
   }
-  loadTrack(current); player.play();
+  loadTrack(current);player.play();
 }
 function prevTrack(){
   if(shuffle){
-    let n; do{n=Math.floor(Math.random()*filteredTracks.length);}while(n===current&&filteredTracks.length>1);
+    let n;do{n=Math.floor(Math.random()*filteredTracks.length);}while(n===current&&filteredTracks.length>1);
     current=n;
   }else{
-    current--;
-    if(current<0) current=filteredTracks.length-1;
+    current--;if(current<0)current=filteredTracks.length-1;
   }
-  loadTrack(current); player.play();
+  loadTrack(current);player.play();
 }
-player.onended=()=>{ repeat==="one" ? (player.currentTime=0,player.play()) : nextTrack(); };
+player.onended=()=>{repeat==="one"?(player.currentTime=0,player.play()):nextTrack();};
 
-/* 検索・フィルタ */
+/* 🎧 UI操作 */
+document.getElementById("playBtn").onclick=()=>player.paused?player.play():player.pause();
+document.getElementById("prevBtn").onclick=prevTrack;
+document.getElementById("nextBtn").onclick=nextTrack;
+
+/* 🔍 検索とフィルター */
 function populateArtists(){
   const artists=[...new Set(tracks.map(t=>t.artist))];
   filter.innerHTML='<option value="">すべてのアーティスト</option>';
-  artists.forEach(a=>{const o=document.createElement("option");o.value=a;o.textContent=a;filter.appendChild(o);});
+  artists.forEach(a=>{
+    const o=document.createElement("option");
+    o.value=a;o.textContent=a;filter.appendChild(o);
+  });
 }
 function applyFilters(){
   const k=searchBox.value.toLowerCase(),a=filter.value;
   let r=tracks.filter(t=>(!a||t.artist===a)&&(t.title.toLowerCase().includes(k)||t.artist.toLowerCase().includes(k)));
-  if(favMode) r=r.filter(t=>favorites.includes(t.title));
+  if(favMode)r=r.filter(t=>favorites.includes(t.title));
   renderList(r);
 }
 function renderList(d){
-  filteredTracks=d; list.innerHTML="";
+  filteredTracks=d;list.innerHTML="";
   d.forEach((t,i)=>{
     const div=document.createElement("div");
     div.className="track"+(i===current?" playing":"");
     div.innerHTML=`<span>${t.title} ／ ${t.artist}</span><span class="favorite ${favorites.includes(t.title)?'active':''}">❤</span>`;
     div.onclick=e=>{
       if(e.target.classList.contains("favorite")){toggleFav(t.title,e.target);return;}
-      loadTrack(i); player.play();
+      loadTrack(i);player.play();
     };
     list.appendChild(div);
   });
 }
+searchBox.oninput=applyFilters;
+filter.onchange=applyFilters;
+
+/* ❤️ お気に入り */
 function toggleFav(t,e){
   if(favorites.includes(t)){favorites=favorites.filter(f=>f!==t);e.classList.remove("active");}
   else{favorites.push(t);e.classList.add("active");}
   localStorage.setItem("favorites",JSON.stringify(favorites));
 }
-searchBox.oninput=applyFilters;
-filter.onchange=applyFilters;
 
-/* UIボタン */
+/* 🌀 ボタン状態 */
 function updateButtons(){
   document.getElementById("shuffleBtn").classList.toggle("active",shuffle);
   document.getElementById("favModeBtn").classList.toggle("active",favMode);
-  document.getElementById("repeatBtn").textContent=repeat==="one"?"🔂 リピート: 1曲":repeat==="all"?"🔁 リピート: 全体":"🔁 リピート: オフ";
+  document.getElementById("repeatBtn").textContent=
+    repeat==="one"?"🔂 リピート: 1曲":
+    repeat==="all"?"🔁 リピート: 全体":
+    "🔁 リピート: オフ";
 }
 document.getElementById("shuffleBtn").onclick=()=>{shuffle=!shuffle;localStorage.setItem("shuffle",shuffle);updateButtons();};
 document.getElementById("repeatBtn").onclick=()=>{repeat=repeat==="off"?"one":repeat==="one"?"all":"off";localStorage.setItem("repeat",repeat);updateButtons();};
 document.getElementById("favModeBtn").onclick=()=>{favMode=!favMode;localStorage.setItem("favMode",favMode);applyFilters();updateButtons();};
 
-/* 進行バー */
-player.ontimeupdate=()=>{if(!player.duration)return;const p=(player.currentTime/player.duration)*100;progressBar.style.width=p+"%";currentTimeDisplay.textContent=format(player.currentTime);durationDisplay.textContent=format(player.duration);};
-progressContainer.onclick=e=>{const r=progressContainer.getBoundingClientRect();player.currentTime=((e.clientX-r.left)/r.width)*player.duration;};
+/* ⏱️ 再生バー */
+player.ontimeupdate=()=>{
+  if(!player.duration)return;
+  const p=(player.currentTime/player.duration)*100;
+  progressBar.style.width=p+"%";
+  currentTimeDisplay.textContent=format(player.currentTime);
+  durationDisplay.textContent=format(player.duration);
+};
+progressContainer.onclick=e=>{
+  const r=progressContainer.getBoundingClientRect();
+  player.currentTime=((e.clientX-r.left)/r.width)*player.duration;
+};
 function format(s){const m=Math.floor(s/60),sec=Math.floor(s%60);return`${m}:${sec.toString().padStart(2,"0")}`;}
 function highlight(){document.querySelectorAll(".track").forEach((el,i)=>el.classList.toggle("playing",i===current));}
-document.getElementById("playBtn").onclick=()=>player.paused?player.play():player.pause();
-document.getElementById("prevBtn").onclick=prevTrack;
-document.getElementById("nextBtn").onclick=nextTrack;
 
-/* 音量・速度 */
+/* 🔊 音量・速度 */
 function setupAudioControls(){
-  volumeSlider.value=volume; volumeValue.textContent=Math.round(volume*100);
-  speedSlider.value=speed; speedValue.textContent=speed.toFixed(1);
+  volumeSlider.value=volume;volumeValue.textContent=Math.round(volume*100);
+  speedSlider.value=speed;speedValue.textContent=speed.toFixed(1);
+  player.volume=volume;player.playbackRate=speed;
   volumeSlider.oninput=()=>{volume=parseFloat(volumeSlider.value);player.volume=volume;volumeValue.textContent=Math.round(volume*100);localStorage.setItem("volume",volume);};
   speedSlider.oninput=()=>{speed=parseFloat(speedSlider.value);player.playbackRate=speed;speedValue.textContent=speed.toFixed(1);localStorage.setItem("speed",speed);};
 }
 
-/* 波形 */
+/* 🌊 波形アニメーション */
 function drawWave(){
   const c=document.getElementById("wave"),ctx=c.getContext("2d");
   let w,h;function resize(){w=c.width=innerWidth;h=c.height=innerHeight;}window.onresize=resize;resize();
-  const data=new Uint8Array(1024);
-  function loop(){
-    requestAnimationFrame(loop);
-    if(!analyser)return;
-    analyser.getByteTimeDomainData(data);
+  ctx.strokeStyle="rgba(130,120,255,0.15)";
+  function loop(){requestAnimationFrame(loop);
+    const time=(Date.now()/2000);
     ctx.clearRect(0,0,w,h);
-    ctx.lineWidth=2;ctx.strokeStyle="rgba(130,120,255,0.25)";
     ctx.beginPath();
-    for(let i=0;i<data.length;i++){
-      const x=(i/data.length)*w;
-      const y=h/2+(data[i]-128)*0.8;
-      if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);
+    for(let x=0;x<w;x+=10){
+      const y=h/2+Math.sin(x/80+time*4)*20;
+      if(x===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);
     }
     ctx.stroke();
   }
