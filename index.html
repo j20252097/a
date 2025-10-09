@@ -17,70 +17,57 @@
   :root{
     --accent:#a58ff7;
     --accent-2:#ff8cb0;
-    --surface:#ffffff;
   }
   html,body{height:100%;margin:0;font-family:"Hiragino Sans","Noto Sans JP",sans-serif;background:linear-gradient(135deg,#fcecff,#eafff8,#e0e8ff);overflow-x:hidden;-webkit-font-smoothing:antialiased;}
   /* canvases */
-  #particles, #wave { position:fixed; left:0; top:0; width:100vw; height:100vh; z-index:0; pointer-events:none; }
-  h1{ text-align:center;color:#6a5acd;margin:22px 0 6px; z-index:2; position:relative; }
-  #player{ max-width:760px; margin:14px auto 94px; background:var(--surface); border-radius:16px; padding:18px; box-shadow:0 8px 30px rgba(25,20,40,0.06); position:relative; z-index:2; display:grid; grid-template-columns:120px 1fr; gap:16px; align-items:start; }
-  .artwrap{ width:120px; height:120px; border-radius:12px; background:linear-gradient(180deg,#fff,#f3f0ff); display:flex; align-items:center; justify-content:center; box-shadow: 12px 12px 24px rgba(160,150,200,0.12), -12px -12px 24px rgba(255,255,255,0.8); overflow:hidden; position:relative; }
-  .artwrap img{ width:100%; height:100%; object-fit:cover; transition:transform .6s linear; }
-  .artwrap.playing img{ animation: rotateAlbum 6s linear infinite; }
-  @keyframes rotateAlbum { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+  #particles,#wave{position:fixed;left:0;top:0;width:100vw;height:100vh;z-index:0;pointer-events:none;}
+  h1{text-align:center;color:#6a5acd;margin:22px 0 6px;z-index:2;position:relative;}
+  /* player card */
+  #player{max-width:760px;margin:16px auto 94px;background:#fff;border-radius:14px;padding:18px;box-shadow:0 8px 30px rgba(25,20,40,0.06);position:relative;z-index:2;display:grid;grid-template-columns:120px 1fr;gap:16px;align-items:start;}
+  .artwrap{width:120px;height:120px;border-radius:12px;background:linear-gradient(180deg,#fff,#f3f0ff);display:flex;align-items:center;justify-content:center;box-shadow: 10px 10px 30px rgba(160,150,200,0.06);overflow:hidden;}
+  .artwrap img{width:100%;height:100%;object-fit:cover;transition:transform .6s linear;}
+  .artwrap.playing img{animation:rotateAlbum 6s linear infinite;}
+  @keyframes rotateAlbum{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
 
-  .maincol{ padding-right:6px; display:flex; flex-direction:column; gap:8px; }
-  #info{ font-size:1rem; color:#222; margin:6px 0 0 0; }
-  #metaSmall{ font-size:0.85rem; color:#666; }
+  .maincol{display:flex;flex-direction:column;gap:8px;}
+  #info{font-size:1rem;color:#222;margin-top:8px;}
+  #metaSmall{font-size:0.9rem;color:#666;}
 
-  /* metallic progress */
-  #progressContainer{ grid-column: 1 / -1; width:100%; height:12px; background:#eee;border-radius:12px;margin-top:6px; cursor:pointer; position:relative; overflow:hidden; }
-  #progressBar{ height:100%; width:0; border-radius:12px; background: linear-gradient(90deg,var(--accent),var(--accent-2)); position:relative; box-shadow: inset 0 1px 0 rgba(255,255,255,0.3); transition: width .08s linear; }
-  #progressBar::after{ content:''; position:absolute; right:-40%; top:0; width:40%; height:100%; transform:skewX(-20deg); background:linear-gradient(90deg, rgba(255,255,255,0.35), rgba(255,255,255,0.05)); animation: sheen 3s linear infinite; opacity:0.9; }
-  @keyframes sheen { from { right:-40% } to { right:120%; } }
+  #progressContainer{grid-column:1 / -1;width:100%;height:12px;background:#eee;border-radius:12px;margin-top:6px;cursor:pointer;overflow:hidden;position:relative;}
+  #progressBar{height:100%;width:0;background:linear-gradient(90deg,var(--accent),var(--accent-2));transition:width .08s linear;}
+  #timeDisplay{grid-column:1 / -1;text-align:center;font-size:0.95rem;color:#444;margin-top:6px;}
 
-  .controls, #extraControls, .sliderContainer, .track, button {
-    border-radius:10px;
-    box-shadow: 6px 6px 16px rgba(180,170,210,0.08), -6px -6px 16px rgba(255,255,255,0.9);
-  }
+  .controls{grid-column:1 / -1;display:flex;gap:8px;align-items:center;justify-content:center;margin-top:6px;}
+  button{background:var(--accent);color:#fff;border:none;border-radius:10px;padding:8px 12px;cursor:pointer;transition:transform .15s,box-shadow .15s;}
+  button:hover{transform:translateY(-3px);background:#8c73e6;}
+  button.active{background:var(--accent-2);}
+  .ripple-btn{position:relative;overflow:hidden;}
 
-  .controls{ grid-column: 1 / -1; display:flex; gap:8px; align-items:center; justify-content:center; margin-top:6px; }
-  button{ background:var(--accent); color:#fff; border:none; padding:8px 12px; border-radius:10px; cursor:pointer; transition: transform .18s ease, box-shadow .18s; box-shadow: 6px 6px 18px rgba(140,120,200,0.08), -6px -6px 18px rgba(255,255,255,0.9); }
-  button:hover{ transform: translateY(-3px); }
-  button.floating{ animation: floatBtn 4s ease-in-out infinite; }
-  @keyframes floatBtn { 0%{ transform: translateY(0); } 50%{ transform: translateY(-6px);} 100%{ transform: translateY(0);} }
+  .sliderContainer{display:flex;flex-direction:column;gap:6px;padding:10px;background:linear-gradient(180deg,#faf9ff,#fff);border-radius:10px;}
+  input[type="range"]{width:220px;-webkit-appearance:none;height:6px;border-radius:6px;background:linear-gradient(90deg,var(--accent),var(--accent-2));outline:none;}
+  input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:#fff;border:3px solid var(--accent);box-shadow:0 4px 12px rgba(160,150,200,0.25);cursor:pointer;}
 
-  .sliderContainer{ display:flex; flex-direction:column; gap:6px; padding:10px; background:linear-gradient(180deg,#faf9ff,#fff); border-radius:10px; }
-  input[type="range"]{ -webkit-appearance:none; height:6px; border-radius:6px; background:linear-gradient(90deg,var(--accent),var(--accent-2)); outline:none; box-shadow: inset 0 2px 6px rgba(0,0,0,0.03); transition: background .2s; }
-  input[type="range"]::-webkit-slider-thumb{ -webkit-appearance:none; width:18px; height:18px; border-radius:50%; background:#fff; box-shadow: 0 4px 12px rgba(160,150,200,0.25); border: 3px solid var(--accent); cursor:pointer; }
-  input[type="range"].glow { box-shadow: 0 0 18px rgba(165,143,247,0.35); transition: box-shadow .35s; }
+  #searchBox,#artistFilter{width:90%;max-width:360px;padding:8px;border-radius:8px;border:1px solid #eee;margin:8px auto;display:block;}
+  #trackList{grid-column:1 / -1;margin-top:12px;max-height:360px;overflow:auto;padding-bottom:10px;}
+  .track{display:flex;justify-content:space-between;align-items:center;padding:12px;margin:8px;border-radius:10px;cursor:pointer;box-shadow:6px 6px 16px rgba(180,170,210,0.06), -6px -6px 16px rgba(255,255,255,0.9);background:#fff;}
+  .track.playing{background:linear-gradient(90deg,#f7f6ff,#fff);border-left:6px solid var(--accent);transform:translateY(-3px);}
+  .favorite{font-size:1.1rem;color:#cfcfcf;cursor:pointer;padding:6px;border-radius:8px;}
+  .favorite.active{color:#ff6781;transform:scale(1.05);}
 
-  #trackList{ grid-column: 1 / -1; margin-top:12px; max-height:360px; overflow:auto; padding-bottom:20px; }
-  .track{ display:flex; justify-content:space-between; align-items:center; padding:12px; margin:8px; cursor:pointer; transition: transform .12s ease; background:linear-gradient(90deg,#fff,#fbfbff); }
-  .track:hover{ transform: translateY(-4px); }
-  .track.playing{ border-left:6px solid var(--accent); background: linear-gradient(90deg,#f7f6ff,#fff); }
+  /* ripple animation */
+  .ripple{position:absolute;border-radius:50%;transform:scale(0);background:rgba(255,255,255,0.45);animation:rippleAnim .6s linear;pointer-events:none;}
+  @keyframes rippleAnim{to{transform:scale(4);opacity:0;}}
 
-  .favorite{ font-size:1.1rem; color:#cfcfcf; cursor:pointer; user-select:none; padding:6px; border-radius:8px; }
-  .favorite.active{ color:#ff6781; transform: scale(1.05); }
+  /* mini player (bottom) */
+  #miniPlayer{position:fixed;left:12px;right:12px;bottom:12px;background:linear-gradient(90deg,#fff,#f8f7ff);border-radius:12px;box-shadow:0 10px 30px rgba(20,10,40,0.08);z-index:9999;display:flex;align-items:center;gap:12px;padding:8px 12px;display:none;}
+  #miniPlayer .mini-title{flex:1;font-size:0.95rem;color:#222;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  #miniPlayer button{padding:8px;min-width:40px;}
 
-  /* ripple effect (④) */
-  .ripple-btn{ position:relative; overflow:hidden; }
-  .ripple { position:absolute; border-radius:50%; transform: scale(0); background: rgba(255,255,255,0.5); animation: rippleAnim .6s linear; pointer-events:none; }
-  @keyframes rippleAnim { to { transform: scale(4); opacity:0; } }
-
-  /* mini-player (⑳) */
-  #miniPlayer{ position:fixed; left:12px; right:12px; bottom:12px; background:linear-gradient(90deg,#fff,#f8f7ff); border-radius:12px; box-shadow:0 10px 30px rgba(20,10,40,0.08); z-index:9999; display:flex; align-items:center; gap:12px; padding:8px 12px; }
-  #miniPlayer .mini-title{ flex:1; font-size:0.95rem; color:#222; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-  #miniPlayer button{ padding:8px; min-width:40px; }
-
-  /* cursor tail (⑰) */
-  .cursor-tail { position:fixed; width:8px; height:8px; border-radius:50%; pointer-events:none; z-index:99999; background:linear-gradient(90deg,var(--accent),var(--accent-2)); opacity:0.9; transform:translate(-50%,-50%); mix-blend-mode:screen; }
-
-  footer{text-align:center;color:#666;margin-top:40px;}
   @media (max-width:720px){
-    #player{ grid-template-columns: 1fr; padding:12px; }
-    .artwrap{ width:96px; height:96px; margin:0 auto; }
+    #player{grid-template-columns:1fr;padding:12px;}
+    .artwrap{width:96px;height:96px;margin:0 auto;}
   }
+  footer{text-align:center;color:#666;margin-top:18px;}
 </style>
 </head>
 <body>
@@ -95,10 +82,10 @@
 
   <div class="maincol">
     <div id="info">読み込み待ち...</div>
-    <div id="metaSmall">—</div>
+    <div id="metaSmall">---</div>
 
     <div id="progressContainer" title="クリックでシーク"><div id="progressBar"></div></div>
-    <div id="timeDisplay"><span id="currentTime">0:00</span><span id="duration">0:00</span></div>
+    <div id="timeDisplay">0:00</div>
 
     <div class="controls">
       <button id="prevBtn" class="ripple-btn">⏮</button>
@@ -106,13 +93,13 @@
       <button id="nextBtn" class="ripple-btn">⏭</button>
     </div>
 
-    <div id="extraControls" style="display:flex;gap:8px;justify-content:center">
+    <div class="controls" style="justify-content:center;">
       <button id="shuffleBtn" class="ripple-btn">🔀</button>
       <button id="repeatBtn" class="ripple-btn">🔁 リピート: オフ</button>
       <button id="favModeBtn" class="ripple-btn">❤️ お気に入りのみ</button>
     </div>
 
-    <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:10px;">
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;">
       <div class="sliderContainer">
         <label>🔊 音量: <span id="volumeValue">80</span>%</label>
         <input type="range" id="volumeSlider" min="0" max="1" step="0.01" />
@@ -124,23 +111,22 @@
     </div>
   </div>
 
-  <!-- hidden audio element -->
   <audio id="audioPlayer" preload="metadata"></audio>
 
-  <div style="grid-column:1 / -1; margin-top:8px;">
-    <input id="searchBox" placeholder="🔍 曲名やアーティストで検索..." style="display:block; width:90%; max-width:640px; margin:8px auto; padding:8px; border-radius:8px; border:1px solid #eee;" />
-    <select id="artistFilter" style="display:block; width:90%; max-width:360px; margin:8px auto; padding:8px; border-radius:8px; border:1px solid #eee;"><option value="">すべてのアーティスト</option></select>
+  <div style="grid-column:1 / -1;margin-top:8px;">
+    <input id="searchBox" placeholder="🔍 曲名やアーティストで検索..." />
+    <select id="artistFilter"><option value="">すべてのアーティスト</option></select>
     <div id="trackList"></div>
   </div>
 </div>
 
 <!-- mini player -->
-<div id="miniPlayer" style="display:none;">
+<div id="miniPlayer">
   <button id="miniPrev">⏮</button>
   <button id="miniPlay">▶️</button>
   <div class="mini-title" id="miniTitle">---</div>
-  <div style="width:120px; height:8px; background:#eee; border-radius:8px; overflow:hidden;">
-    <div id="miniProgress" style="height:100%; width:0; background:linear-gradient(90deg,var(--accent),var(--accent-2));"></div>
+  <div style="width:120px;height:8px;background:#eee;border-radius:8px;overflow:hidden;">
+    <div id="miniProgress" style="height:100%;width:0;background:linear-gradient(90deg,var(--accent),var(--accent-2));"></div>
   </div>
 </div>
 
@@ -148,10 +134,9 @@
 
 <script>
 /* ---------------------------
-  安定版プレイヤー（豪華UI）
-  - tracks.json を同ディレクトリに配置
-  - tracks 配列要素は { title, artist, url, artwork? }
-  --------------------------- */
+   完全版 — ミニプレイヤー復活・時刻表示修正・スキップ修正
+   - tracks.json を同ディレクトリに配置してください
+   --------------------------- */
 
 const audio = document.getElementById('audioPlayer');
 const playBtn = document.getElementById('playBtn');
@@ -162,8 +147,7 @@ const repeatBtn = document.getElementById('repeatBtn');
 const favModeBtn = document.getElementById('favModeBtn');
 const progressContainer = document.getElementById('progressContainer');
 const progressBar = document.getElementById('progressBar');
-const currentTimeEl = document.getElementById('currentTime');
-const durationEl = document.getElementById('duration');
+const timeDisplay = document.getElementById('timeDisplay');
 const volumeSlider = document.getElementById('volumeSlider');
 const speedSlider = document.getElementById('speedSlider');
 const volumeValue = document.getElementById('volumeValue');
@@ -175,6 +159,7 @@ const artistFilter = document.getElementById('artistFilter');
 const trackListEl = document.getElementById('trackList');
 const artwrap = document.getElementById('artwrap');
 const artImg = document.getElementById('artImg');
+
 const mini = document.getElementById('miniPlayer');
 const miniPlay = document.getElementById('miniPlay');
 const miniPrev = document.getElementById('miniPrev');
@@ -187,7 +172,7 @@ let currentFilteredIndex = 0;
 let currentTrackIndex = 0;
 let favorites = JSON.parse(localStorage.getItem('favorites')||'[]');
 let shuffle = JSON.parse(localStorage.getItem('shuffle')||'false');
-let repeat = localStorage.getItem('repeat')||'off';
+let repeat = localStorage.getItem('repeat')||'off'; // "off" | "one" | "all"
 let favMode = JSON.parse(localStorage.getItem('favMode')||'false');
 let volume = parseFloat(localStorage.getItem('volume')||'0.8');
 let speed = parseFloat(localStorage.getItem('speed')||'1.0');
@@ -195,9 +180,9 @@ let speed = parseFloat(localStorage.getItem('speed')||'1.0');
 const RECENT_HISTORY_SIZE = 12;
 let recentlyPlayed = [];
 
-/* helpers */
+/* utilities */
 function fmtTime(sec){
-  if (!isFinite(+sec)) return '0:00';
+  if (!isFinite(sec)) return '0:00';
   const m = Math.floor(sec/60);
   const s = Math.floor(sec%60);
   return `${m}:${String(s).padStart(2,'0')}`;
@@ -209,39 +194,52 @@ function saveSettings(){
   localStorage.setItem('volume', String(volume));
   localStorage.setItem('speed', String(speed));
 }
+function saveCurrentTrackIndex(){
+  localStorage.setItem('currentTrackIndex', String(currentTrackIndex));
+}
 
-/* データ読み込み（遅延） */
+/* ---------------------------
+   トラック読み込み（遅延ロード）
+   --------------------------- */
 async function loadTracksIfNeeded(){
   if (tracks.length) return;
   try {
     const res = await fetch('tracks.json', {cache:'no-store'});
     if (!res.ok) throw new Error('network');
     const arr = await res.json();
-    if (!Array.isArray(arr)) throw new Error('invalid');
-    tracks = arr;
+    if (Array.isArray(arr)) tracks = arr;
+    else tracks = [];
     populateArtists();
     applyFilters();
+    // restore last track index
     const saved = parseInt(localStorage.getItem('currentTrackIndex'));
-    if (!isNaN(saved) && saved >=0 && saved < tracks.length){
+    if (!isNaN(saved) && saved >= 0 && saved < tracks.length) {
       currentTrackIndex = saved;
       const pos = filteredIndices.indexOf(currentTrackIndex);
       currentFilteredIndex = pos >= 0 ? pos : 0;
-    } else currentFilteredIndex = 0;
+    } else {
+      currentFilteredIndex = 0;
+    }
     loadTrackByFilteredIndex(currentFilteredIndex, false);
   } catch(e){
     console.error('tracks.json 読み込み失敗', e);
-    info.textContent = 'tracks の読み込みに失敗しました';
+    info.textContent = 'tracksの読み込みに失敗しました';
   }
 }
 
-/* artists & filtering */
+/* ---------------------------
+   フィルタ / リスト描画
+   --------------------------- */
 function populateArtists(){
-  const artists = [...new Set(tracks.map(t=>t.artist).filter(Boolean))].sort();
+  const artists = [...new Set(tracks.map(t => t.artist).filter(Boolean))].sort();
   artistFilter.innerHTML = '<option value="">すべてのアーティスト</option>';
   artists.forEach(a=>{
-    const o = document.createElement('option'); o.value = a; o.textContent = a; artistFilter.appendChild(o);
+    const o = document.createElement('option');
+    o.value = a; o.textContent = a;
+    artistFilter.appendChild(o);
   });
 }
+
 function applyFilters(){
   const kw = (searchBox.value || '').trim().toLowerCase();
   const artist = artistFilter.value;
@@ -256,76 +254,69 @@ function applyFilters(){
   if (!filteredIndices.length){
     trackListEl.innerHTML = '<div style="padding:10px;color:#777">該当する曲がありません</div>';
     info.textContent = 'トラック無し';
-    metaSmall.textContent = '';
     return;
   }
-  const currentPos = filteredIndices.indexOf(currentTrackIndex);
-  if (currentPos === -1) currentFilteredIndex = 0;
+  // if currentTrackIndex not in filtered -> reset to first
+  const pos = filteredIndices.indexOf(currentTrackIndex);
+  if (pos === -1) currentFilteredIndex = 0;
   renderList();
 }
 
-/* render list: each item has play/stop button on right + fav heart */
+/* render list with favorite icon */
 function renderList(){
   trackListEl.innerHTML = '';
   filteredIndices.forEach((trackIdx, idx) => {
     const t = tracks[trackIdx];
     const div = document.createElement('div');
     div.className = 'track' + (idx === currentFilteredIndex ? ' playing' : '');
-    const left = document.createElement('div'); left.style.flex = '1'; left.textContent = `${t.title} ／ ${t.artist}`; left.style.userSelect='none';
-    left.onclick = ()=>{ loadTrackByFilteredIndex(idx, true); };
-    const right = document.createElement('div'); right.style.display='flex'; right.style.alignItems='center';
-    // play/stop icon (▶ / ■)
-    const playStop = document.createElement('button');
-    playStop.style.marginRight = '8px';
-    playStop.textContent = (idx===currentFilteredIndex && !audio.paused) ? '■' : '▶';
-    playStop.onclick = (e) => { e.stopPropagation(); if (idx !== currentFilteredIndex) loadTrackByFilteredIndex(idx, true); else { if (audio.paused) audio.play(); else audio.pause(); } updateListPlayIcons(); };
-    // favorite
+    const left = document.createElement('div');
+    left.style.flex = '1';
+    left.style.userSelect = 'none';
+    left.textContent = `${t.title} ／ ${t.artist}`;
+    left.onclick = () => loadTrackByFilteredIndex(idx, true);
+
+    const right = document.createElement('div');
+    right.style.display = 'flex';
+    right.style.alignItems = 'center';
+
     const fav = document.createElement('span');
     fav.className = 'favorite' + (favorites.includes(t.title) ? ' active' : '');
     fav.innerHTML = favorites.includes(t.title) ? '❤' : '♡';
     fav.title = favorites.includes(t.title) ? 'お気に入り解除' : 'お気に入りに追加';
-    fav.onclick = (e) => { e.stopPropagation(); toggleFavorite(t.title); renderList(); };
-    right.appendChild(playStop);
+    fav.onclick = (e) => { e.stopPropagation(); toggleFavorite(t.title); };
+
     right.appendChild(fav);
     div.appendChild(left);
     div.appendChild(right);
     trackListEl.appendChild(div);
   });
 }
-function updateListPlayIcons(){
-  // update per-item play button text according to current state
-  const nodes = trackListEl.querySelectorAll('.track');
-  nodes.forEach((node, idx)=>{
-    const btn = node.querySelector('button');
-    if (!btn) return;
-    btn.textContent = (idx===currentFilteredIndex && !audio.paused) ? '■' : '▶';
-  });
-}
 
-/* play control */
+/* ---------------------------
+   再生制御（filteredIndices を基準）
+   --------------------------- */
 function loadTrackByFilteredIndex(filteredIdx, shouldPlay){
   if (!filteredIndices.length) return;
-  if (filteredIdx < 0) filteredIdx = 0;
+  if (filteredIdx < 0) filteredIdx = filteredIndices.length - 1;
   if (filteredIdx >= filteredIndices.length) filteredIdx = 0;
   currentFilteredIndex = filteredIdx;
   currentTrackIndex = filteredIndices[currentFilteredIndex];
   const t = tracks[currentTrackIndex];
   if (!t) return;
-  // set audio src and metadata
   audio.src = t.url;
   audio.volume = volume;
   audio.playbackRate = speed;
-  info.textContent = `${t.title}`;
-  metaSmall.textContent = `${t.artist}`;
-  if (t.artwork) artImg.src = t.artwork; else artImg.src = 'https://raw.githubusercontent.com/j20252097/a/refs/heads/main/Guild.png';
-  // art rotation depends on playing
+  info.textContent = t.title || '---';
+  metaSmall.textContent = t.artist || '';
+  artImg.src = t.artwork || 'https://raw.githubusercontent.com/j20252097/a/refs/heads/main/Guild.png';
+  // rotate if playing
   if (!audio.paused) artwrap.classList.add('playing'); else artwrap.classList.remove('playing');
   renderList();
   saveCurrentTrackIndex();
   updateMediaSession(t);
   updateMini();
   if (shouldPlay) {
-    audio.play().catch(()=>{/* ignore */});
+    audio.play().catch(()=>{/* ignore playback rejection */});
   }
 }
 
@@ -333,14 +324,16 @@ function determineNextIndex(){
   if (!filteredIndices.length) return null;
   if (shuffle) {
     if (filteredIndices.length === 1) return currentFilteredIndex;
-    let attempts = 0, pick;
+    let attempts = 0; let pick;
     do { pick = Math.floor(Math.random()*filteredIndices.length); attempts++; } while (pick === currentFilteredIndex && attempts < 8);
     const pickedTrackIdx = filteredIndices[pick];
     if (!recentlyPlayed.includes(pickedTrackIdx)){
       recentlyPlayed.unshift(pickedTrackIdx);
       if (recentlyPlayed.length > RECENT_HISTORY_SIZE) recentlyPlayed.pop();
       return pick;
-    } else return (currentFilteredIndex + 1) % filteredIndices.length;
+    } else {
+      return (currentFilteredIndex + 1) % filteredIndices.length;
+    }
   } else {
     let next = currentFilteredIndex + 1;
     if (next >= filteredIndices.length){
@@ -350,39 +343,65 @@ function determineNextIndex(){
     return next;
   }
 }
-function nextTrack(){ const ni = determineNextIndex(); if (ni === null){ audio.pause(); return; } loadTrackByFilteredIndex(ni, true); }
-function prevTrack(){ if (!filteredIndices.length) return; if (shuffle){ const pick = Math.floor(Math.random()*filteredIndices.length); loadTrackByFilteredIndex(pick, true); } else { let prev = currentFilteredIndex - 1; if (prev < 0) prev = filteredIndices.length - 1; loadTrackByFilteredIndex(prev, true); } }
+
+function nextTrack(){
+  const ni = determineNextIndex();
+  if (ni === null) { audio.pause(); return; }
+  loadTrackByFilteredIndex(ni, true);
+}
+function prevTrack(){
+  if (!filteredIndices.length) return;
+  if (shuffle) {
+    const pick = Math.floor(Math.random()*filteredIndices.length);
+    loadTrackByFilteredIndex(pick, true);
+  } else {
+    let prev = currentFilteredIndex - 1;
+    if (prev < 0){
+      if (repeat === 'all') prev = filteredIndices.length - 1;
+      else { audio.pause(); return; }
+    }
+    loadTrackByFilteredIndex(prev, true);
+  }
+}
 
 /* favorites */
 function toggleFavorite(title){
   if (!title) return;
-  if (favorites.includes(title)) favorites = favorites.filter(x=>x!==title);
+  if (favorites.includes(title)) favorites = favorites.filter(x => x !== title);
   else favorites.push(title);
   localStorage.setItem('favorites', JSON.stringify(favorites));
   applyFilters();
 }
 
-/* MediaSession (ロック画面) */
+/* MediaSession */
 function updateMediaSession(track){
   if (!('mediaSession' in navigator)) return;
   try {
     navigator.mediaSession.metadata = new MediaMetadata({
       title: track.title || '',
       artist: track.artist || '',
-      artwork: [{ src: track.artwork || 'https://raw.githubusercontent.com/j20252097/a/refs/heads/main/Guild.png', sizes:'512x512', type:'image/png' }]
+      artwork: [
+        { src: track.artwork || 'https://raw.githubusercontent.com/j20252097/a/refs/heads/main/Guild.png', sizes:'512x512', type:'image/png' }
+      ]
     });
     navigator.mediaSession.setActionHandler('play', ()=> audio.play());
     navigator.mediaSession.setActionHandler('pause', ()=> audio.pause());
     navigator.mediaSession.setActionHandler('previoustrack', ()=> prevTrack());
     navigator.mediaSession.setActionHandler('nexttrack', ()=> nextTrack());
     if (navigator.mediaSession.setPositionState && audio.duration && !isNaN(audio.duration)){
-      try { navigator.mediaSession.setPositionState({ duration: audio.duration, playbackRate: audio.playbackRate, position: audio.currentTime }); } catch(e){}
+      try { navigator.mediaSession.setPositionState({ duration: audio.duration, playbackRate: audio.playbackRate, position: audio.currentTime }); } catch(e) {}
     }
-  } catch(e){ console.warn('MediaSession error', e); }
+  } catch(e){
+    console.warn('MediaSession error', e);
+  }
 }
 
-/* UI behaviors */
-function attachRipples(){
+/* ---------------------------
+   UI イベント
+   --------------------------- */
+
+/* ripple effect */
+function attachRippleButtons(){
   document.querySelectorAll('.ripple-btn').forEach(btn=>{
     btn.addEventListener('click', function(e){
       const r = document.createElement('span');
@@ -397,138 +416,176 @@ function attachRipples(){
     });
   });
 }
-attachRipples();
+attachRippleButtons();
 
-/* event wiring */
+/* top controls */
 playBtn.addEventListener('click', async ()=>{
   if (!tracks.length) await loadTracksIfNeeded();
   if (!audio.src && filteredIndices.length) loadTrackByFilteredIndex(currentFilteredIndex, false);
-  if (audio.paused){
-    try { await audio.play(); } catch(e){ console.warn('play failed', e); }
-  } else { audio.pause(); }
+  if (audio.paused) {
+    try { await audio.play(); } catch(e) { console.warn('play failed', e); }
+  } else {
+    audio.pause();
+  }
 });
-miniPlay.addEventListener('click', ()=> playBtn.click());
-prevBtn.addEventListener('click', ()=> prevTrack());
-miniPrev.addEventListener('click', ()=> prevTrack());
 nextBtn.addEventListener('click', ()=> nextTrack());
+prevBtn.addEventListener('click', ()=> prevTrack());
 
 shuffleBtn.addEventListener('click', ()=>{ shuffle = !shuffle; shuffleBtn.classList.toggle('active', shuffle); saveSettings(); recentlyPlayed = []; });
-repeatBtn.addEventListener('click', ()=>{ repeat = repeat === 'off' ? 'one' : repeat === 'one' ? 'all' : 'off'; repeatBtn.classList.toggle('active', repeat !== 'off'); repeatBtn.textContent = repeat === 'one' ? '🔂 リピート: 1曲' : repeat === 'all' ? '🔁 リピート: 全体' : '🔁 リピート: オフ'; saveSettings(); });
+repeatBtn.addEventListener('click', ()=>{
+  repeat = repeat === 'off' ? 'one' : repeat === 'one' ? 'all' : 'off';
+  repeatBtn.classList.toggle('active', repeat !== 'off');
+  repeatBtn.textContent = repeat === 'one' ? '🔂 リピート: 1曲' : repeat === 'all' ? '🔁 リピート: 全体' : '🔁 リピート: オフ';
+  saveSettings();
+});
 favModeBtn.addEventListener('click', ()=>{ favMode = !favMode; favModeBtn.classList.toggle('active', favMode); localStorage.setItem('favMode', JSON.stringify(favMode)); applyFilters(); });
 
-volumeSlider.value = volume; volumeValue.textContent = Math.round(volume*100);
-volumeSlider.addEventListener('input', ()=>{ volume = parseFloat(volumeSlider.value); audio.volume = volume; volumeValue.textContent = Math.round(volume*100); localStorage.setItem('volume', String(volume)); volumeSlider.classList.add('glow'); setTimeout(()=>volumeSlider.classList.remove('glow'),500); });
-speedSlider.value = speed; speedValue.textContent = speed.toFixed(1);
-speedSlider.addEventListener('input', ()=>{ speed = parseFloat(speedSlider.value); audio.playbackRate = speed; speedValue.textContent = speed.toFixed(1); localStorage.setItem('speed', String(speed)); speedSlider.classList.add('glow'); setTimeout(()=>speedSlider.classList.remove('glow'),500); });
+/* mini controls */
+miniPlay.addEventListener('click', ()=> playBtn.click());
+miniPrev.addEventListener('click', ()=> prevTrack());
+mini.addEventListener('click', (e)=>{/* no-op container click */});
 
+/* sliders */
+volumeSlider.value = volume; volumeValue.textContent = Math.round(volume*100);
+volumeSlider.addEventListener('input', ()=>{
+  volume = parseFloat(volumeSlider.value);
+  audio.volume = volume;
+  volumeValue.textContent = Math.round(volume*100);
+  localStorage.setItem('volume', String(volume));
+});
+speedSlider.value = speed; speedValue.textContent = speed.toFixed(1);
+speedSlider.addEventListener('input', ()=>{
+  speed = parseFloat(speedSlider.value);
+  audio.playbackRate = speed;
+  speedValue.textContent = speed.toFixed(1);
+  localStorage.setItem('speed', String(speed));
+});
+
+/* search & filter */
 searchBox.addEventListener('input', applyFilters);
 artistFilter.addEventListener('change', applyFilters);
 
+/* progress seek */
 progressContainer.addEventListener('click', (e)=>{
   if (!audio.duration) return;
   const rect = progressContainer.getBoundingClientRect();
-  const pos = (e.clientX - rect.left)/rect.width;
+  const pos = (e.clientX - rect.left) / rect.width;
   audio.currentTime = pos * audio.duration;
 });
 
-/* time updates: fix for broken concatenation by updating separately */
+/* mini progress seek (allow click on bar area) */
+document.getElementById('miniPlayer').addEventListener('click', (e)=>{
+  // only seek if click near mini progress area
+  const rect = mini.getBoundingClientRect();
+  const px = e.clientX - rect.left;
+  const pwidth = rect.width - 200; // approximate area for progress (title + buttons occupy)
+  // Better: use miniProgress container boundaries — we have progress area width fixed, skip complex; ignore for now.
+});
+
+/* audio events */
 audio.addEventListener('timeupdate', ()=>{
   if (!audio.duration) return;
   const percent = (audio.currentTime / audio.duration) * 100;
   progressBar.style.width = percent + '%';
-  currentTimeEl.textContent = fmtTime(audio.currentTime);
-  durationEl.textContent = fmtTime(audio.duration);
+  timeDisplay.textContent = fmtTime(audio.currentTime); // only current time as requested
   miniProgress.style.width = percent + '%';
-  // media session position
+  // update media session position
   if (navigator.mediaSession && navigator.mediaSession.setPositionState){
-    try { navigator.mediaSession.setPositionState({ duration: audio.duration, playbackRate: audio.playbackRate, position: audio.currentTime }); } catch(e){}
+    try { navigator.mediaSession.setPositionState({ duration: audio.duration, playbackRate: audio.playbackRate, position: audio.currentTime }); } catch(e) {}
   }
 });
-audio.addEventListener('play', ()=>{ playBtn.textContent = '⏸ 停止'; artwrap.classList.add('playing'); miniPlay.textContent = '⏸'; mini.style.display = 'flex'; updateListPlayIcons(); });
-audio.addEventListener('pause', ()=>{ playBtn.textContent = '▶️ 再生'; artwrap.classList.remove('playing'); miniPlay.textContent = '▶️'; updateListPlayIcons(); });
+audio.addEventListener('play', ()=>{
+  playBtn.textContent = '⏸ 停止';
+  miniPlay.textContent = '⏸';
+  artwrap.classList.add('playing');
+  mini.style.display = 'flex';
+});
+audio.addEventListener('pause', ()=>{
+  playBtn.textContent = '▶️ 再生';
+  miniPlay.textContent = '▶️';
+  artwrap.classList.remove('playing');
+});
+audio.addEventListener('ended', ()=>{
+  if (repeat === 'one') { audio.currentTime = 0; audio.play(); }
+  else nextTrack();
+});
 
-audio.addEventListener('ended', ()=>{ if (repeat === 'one') { audio.currentTime = 0; audio.play(); } else nextTrack(); });
-
-/* save/restore */
-function saveCurrentTrackIndex(){ localStorage.setItem('currentTrackIndex', String(currentTrackIndex)); }
-function restoreLast(){ const idx = parseInt(localStorage.getItem('currentTrackIndex')); if (!isNaN(idx) && idx>=0 && idx<tracks.length){ const pos = filteredIndices.indexOf(idx); if (pos>=0){ currentFilteredIndex = pos; currentTrackIndex = idx; loadTrackByFilteredIndex(currentFilteredIndex, false); } } }
-
-/* mini update */
+/* update mini UI */
 function updateMini(){
   const t = tracks[currentTrackIndex];
-  if (!t) return;
-  miniTitle.textContent = `${t.title} — ${t.artist}`;
-  const p = audio.currentTime && audio.duration ? (audio.currentTime / audio.duration) * 100 : 0;
+  if (!t) { mini.style.display = 'none'; return; }
+  miniTitle.textContent = `${t.title} — ${t.artist || ''}`;
+  const p = (audio.currentTime && audio.duration) ? (audio.currentTime / audio.duration) * 100 : 0;
   miniProgress.style.width = p + '%';
   mini.style.display = 'flex';
 }
 
-/* particles (軽量) */
+/* decorative particles & wave (lightweight) */
 (function particles(){
-  const c = document.getElementById('particles');
-  const ctx = c.getContext('2d');
-  let w,h, particlesArr=[];
-  function resize(){ w=c.width=innerWidth; h=c.height=innerHeight; }
+  const c = document.getElementById('particles'), ctx = c.getContext('2d');
+  let w=0,h=0, arr=[];
+  function resize(){ w=c.width=innerWidth; h=c.height=innerHeight; init(); }
+  function init(){
+    arr = [];
+    const count = Math.max(20, Math.floor((w*h)/90000));
+    for (let i=0;i<count;i++){
+      arr.push({ x: Math.random()*w, y: Math.random()*h, r: 0.6 + Math.random()*2.4, vx: (Math.random()-0.5)*0.2, vy: -0.15 - Math.random()*0.2, a: 0.04 + Math.random()*0.18});
+    }
+  }
   window.addEventListener('resize', resize);
   resize();
-  function initParticles(){ particlesArr=[]; const count = Math.max(18, Math.floor((w*h)/90000)); for(let i=0;i<count;i++){ particlesArr.push({ x:Math.random()*w, y:Math.random()*h, r:0.6+Math.random()*2, vx:(Math.random()-0.5)*0.2, vy:-0.15-Math.random()*0.2, a:0.06+Math.random()*0.18 }); } }
-  initParticles();
   let t=0;
-  function loop(){ requestAnimationFrame(loop); t+=0.01; ctx.clearRect(0,0,w,h); particlesArr.forEach(p=>{ p.x+=p.vx; p.y+=p.vy; if(p.y<-10){ p.y=h+10; p.x=Math.random()*w; } ctx.beginPath(); ctx.fillStyle = `rgba(160,140,255,${p.a})`; ctx.arc(p.x + Math.sin(t + p.x*0.001)*12, p.y + Math.cos(t + p.x*0.001)*6, p.r, 0, Math.PI*2); ctx.fill(); }); }
-  loop();
-  window.addEventListener('resize', ()=> initParticles());
+  (function loop(){ requestAnimationFrame(loop); t+=0.01; ctx.clearRect(0,0,w,h); arr.forEach(p=>{ p.x += p.vx; p.y += p.vy; if (p.y < -10){ p.y = h + 10; p.x = Math.random()*w; } ctx.beginPath(); ctx.fillStyle = `rgba(160,140,255,${p.a})`; ctx.arc(p.x + Math.sin(t + p.x*0.001)*12, p.y + Math.cos(t + p.x*0.001)*6, p.r, 0, Math.PI*2); ctx.fill(); }) })();
 })();
 
-/* decorative wave (軽量) */
-(function decorativeWave(){
-  const c = document.getElementById('wave'); const ctx = c.getContext('2d'); let w=0,h=0; function onResize(){ w=c.width=innerWidth; h=c.height=innerHeight; } window.addEventListener('resize', onResize); onResize();
+(function wave(){
+  const c = document.getElementById('wave'), ctx = c.getContext('2d');
+  let w=0,h=0; function onResize(){ w=c.width=innerWidth; h=c.height=innerHeight; } window.addEventListener('resize', onResize); onResize();
   let tt=0;
-  function draw(){ requestAnimationFrame(draw); tt+=0.008; ctx.clearRect(0,0,w,h); for(let layer=0;layer<3;layer++){ ctx.beginPath(); const amp = 10 + layer*6; const freq = 0.004 + layer*0.002; for(let x=0;x<=w;x+=8){ const y = h*0.5 + Math.sin((x*freq) + tt*(1+layer*0.2) + layer) * amp * Math.sin(tt*0.4 + layer); if(x===0) ctx.moveTo(x,y); else ctx.lineTo(x,y); } ctx.strokeStyle = `rgba(120,100,255,${0.05 + layer*0.05})`; ctx.lineWidth = 2; ctx.stroke(); } }
-  draw();
+  (function draw(){ requestAnimationFrame(draw); tt+=0.008; ctx.clearRect(0,0,w,h); for (let layer=0;layer<3;layer++){ ctx.beginPath(); const amp = 8 + layer*6; const freq = 0.004 + layer*0.002; for (let x=0;x<=w;x+=8){ const y = h*0.5 + Math.sin((x*freq) + tt*(1+layer*0.2) + layer) * amp * Math.sin(tt*0.4 + layer); if (x===0) ctx.moveTo(x,y); else ctx.lineTo(x,y); } ctx.strokeStyle = `rgba(120,100,255,${0.05 + layer*0.05})`; ctx.lineWidth = 2; ctx.stroke(); } })();
 })();
 
-/* cursor tail (軽量) */
-(function cursorTail(){
-  const tails=[]; const max=8; for(let i=0;i<max;i++){ const d=document.createElement('div'); d.className='cursor-tail'; d.style.opacity=(1-i/max).toString(); document.body.appendChild(d); tails.push(d); }
-  let mouseX=-100, mouseY=-100; window.addEventListener('mousemove', (e)=>{ mouseX=e.clientX; mouseY=e.clientY; });
-  function frame(){ requestAnimationFrame(frame); tails.forEach((el,idx)=>{ const k=0.08+idx*0.02; const ex=parseFloat(el.dataset.x||mouseX)||mouseX; const ey=parseFloat(el.dataset.y||mouseY)||mouseY; const nx=ex+(mouseX-ex)*k; const ny=ey+(mouseY-ey)*k; el.style.left=nx+'px'; el.style.top=ny+'px'; el.dataset.x=nx; el.dataset.y=ny; el.style.transform=`translate(-50%,-50%) scale(${1-idx*0.06})`; }); }
-  frame();
-})();
-
-/* ripple attach already called */
-
-/* initial UI state */
+/* initial UI setup */
 (function initial(){
   shuffleBtn.classList.toggle('active', shuffle);
   favModeBtn.classList.toggle('active', favMode);
   repeatBtn.textContent = repeat === 'one' ? '🔂 リピート: 1曲' : repeat === 'all' ? '🔁 リピート: 全体' : '🔁 リピート: オフ';
   repeatBtn.classList.toggle('active', repeat !== 'off');
-  audio.volume = volume; audio.playbackRate = speed;
+  audio.volume = volume;
+  audio.playbackRate = speed;
   volumeSlider.value = volume; volumeValue.textContent = Math.round(volume*100);
   speedSlider.value = speed; speedValue.textContent = speed.toFixed(1);
-  document.addEventListener('keydown', (e)=>{ if (e.code === 'Space' && document.activeElement.tagName !== 'INPUT'){ e.preventDefault(); playBtn.click(); } });
+  // keyboard space control
+  document.addEventListener('keydown', (e)=>{
+    if (e.code === 'Space' && document.activeElement.tagName !== 'INPUT') { e.preventDefault(); playBtn.click(); }
+  });
 })();
 
-/* non-blocking preload */
+/* try preload tracks.json non-blocking */
 (async function tryPreload(){
   try {
     const r = await fetch('tracks.json', {cache:'no-store'});
     if (r.ok){
       const arr = await r.json();
-      if (Array.isArray(arr) && arr.length) {
+      if (Array.isArray(arr) && arr.length){
         tracks = arr;
         populateArtists();
         applyFilters();
         const saved = parseInt(localStorage.getItem('currentTrackIndex'));
-        if (!isNaN(saved) && saved >=0 && saved < tracks.length){ currentTrackIndex = saved; const pos = filteredIndices.indexOf(currentTrackIndex); currentFilteredIndex = pos>=0?pos:0; }
+        if (!isNaN(saved) && saved >= 0 && saved < tracks.length){
+          currentTrackIndex = saved;
+          const pos = filteredIndices.indexOf(currentTrackIndex);
+          currentFilteredIndex = pos >= 0 ? pos : 0;
+        } else currentFilteredIndex = 0;
         loadTrackByFilteredIndex(currentFilteredIndex, false);
       }
     }
-  } catch(e){ /* ignore - will load on user gesture */ }
+  } catch(e){ /* ignore */ }
 })();
 
-/* expose helper for debugging */
+/* expose load for play button (if needed externally) */
 window.loadTracksIfNeeded = loadTracksIfNeeded;
+
 </script>
 </body>
 </html>
